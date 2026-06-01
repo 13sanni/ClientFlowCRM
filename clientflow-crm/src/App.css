@@ -3,6 +3,11 @@
   min-height: 100vh;
 }
 
+.app-main {
+  min-width: 0;
+  flex: 1;
+}
+
 .sidebar {
   display: flex;
   width: 264px;
@@ -11,6 +16,11 @@
   border-right: 1px solid #e7ebf2;
   background: #ffffff;
   padding: 22px 16px 18px;
+}
+
+.sidebar-overlay,
+.sidebar__close {
+  display: none;
 }
 
 .sidebar__brand,
@@ -213,7 +223,6 @@
 }
 
 .app-content {
-  flex: 1;
   padding: 38px 42px;
 }
 
@@ -233,9 +242,221 @@
   letter-spacing: 0;
 }
 
+.topbar {
+  display: flex;
+  height: 68px;
+  align-items: center;
+  gap: 16px;
+  border-bottom: 1px solid #e7ebf2;
+  background: #ffffff;
+  padding: 0 28px;
+}
+
+.topbar__menu-button,
+.topbar__icon-button,
+.topbar__profile {
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.topbar__menu-button {
+  display: none;
+}
+
+.topbar__search {
+  display: flex;
+  width: min(440px, 100%);
+  align-items: center;
+  gap: 10px;
+  border: 1px solid #e1e6ee;
+  border-radius: 6px;
+  background: #f9fafc;
+  padding: 0 12px;
+}
+
+.topbar__search:focus-within {
+  border-color: #8ca9de;
+  background: #ffffff;
+}
+
+.topbar__search input {
+  width: 100%;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  padding: 10px 0;
+  color: #253046;
+  font: inherit;
+  font-size: 12px;
+}
+
+.topbar__search input::placeholder {
+  color: #9ca6b5;
+}
+
+.topbar__search-icon {
+  width: 14px;
+  height: 14px;
+  border: 1.5px solid #8793a4;
+  border-radius: 50%;
+  position: relative;
+}
+
+.topbar__search-icon::after {
+  position: absolute;
+  right: -4px;
+  bottom: -3px;
+  width: 5px;
+  height: 1.5px;
+  background: #8793a4;
+  content: '';
+  transform: rotate(45deg);
+}
+
+.topbar__actions,
+.topbar__profile {
+  display: flex;
+  align-items: center;
+}
+
+.topbar__actions {
+  gap: 14px;
+  margin-left: auto;
+}
+
+.topbar__icon-button {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border-radius: 6px;
+}
+
+.topbar__icon-button:hover {
+  background: #f3f6fa;
+}
+
+.topbar__notification-icon {
+  position: relative;
+  width: 15px;
+  height: 16px;
+  border: 1.5px solid #728095;
+  border-radius: 8px 8px 5px 5px;
+}
+
+.topbar__notification-dot {
+  position: absolute;
+  top: -3px;
+  right: -3px;
+  width: 6px;
+  height: 6px;
+  border: 1px solid #ffffff;
+  border-radius: 50%;
+  background: #e36363;
+}
+
+.topbar__profile {
+  gap: 8px;
+  color: #43516a;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.topbar__profile-avatar {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  border-radius: 50%;
+  background: #f1e9dc;
+  color: #76552c;
+  font-size: 10px;
+}
+
+.topbar__profile-chevron {
+  color: #8793a4;
+  font-size: 15px;
+  line-height: 1;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+
 @media (max-width: 520px) {
   .sidebar {
+    position: fixed;
+    z-index: 20;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: min(264px, calc(100vw - 40px));
+    transform: translateX(-100%);
+    transition: transform 180ms ease;
+  }
+
+  .sidebar--open {
+    transform: translateX(0);
+  }
+
+  .sidebar-overlay {
+    position: fixed;
+    z-index: 10;
+    inset: 0;
+    border: 0;
+    background: rgba(23, 32, 51, 0.42);
+  }
+
+  .sidebar-overlay--visible,
+  .sidebar__close,
+  .topbar__menu-button {
+    display: block;
+  }
+
+  .sidebar__close {
+    margin-left: auto;
+    border: 0;
+    background: transparent;
+    color: #718096;
+    cursor: pointer;
+    font-size: 22px;
+    line-height: 1;
+  }
+
+  .topbar {
+    gap: 11px;
+    padding: 0 16px;
+  }
+
+  .topbar__menu-button {
+    padding: 2px;
+  }
+
+  .topbar__menu-icon {
+    display: grid;
+    gap: 3px;
+  }
+
+  .topbar__menu-icon span {
+    display: block;
+    width: 17px;
+    height: 1.5px;
+    background: #69778c;
+  }
+
+  .topbar__profile-name,
+  .topbar__profile-chevron {
     display: none;
+  }
+
+  .topbar__actions {
+    gap: 5px;
   }
 
   .app-content {
