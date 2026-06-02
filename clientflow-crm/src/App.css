@@ -342,6 +342,154 @@
   background: #7968b6;
 }
 
+.clients-panel {
+  margin-top: 16px;
+  border: 1px solid #e5eaf1;
+  border-radius: 7px;
+  background: #ffffff;
+}
+
+.clients-panel__heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 18px 20px;
+}
+
+.clients-panel__heading h2 {
+  margin: 5px 0 0;
+  color: #253046;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+.clients-panel__view-all {
+  border: 0;
+  background: transparent;
+  color: #3165c2;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.clients-panel__view-all:hover {
+  color: #214f9f;
+}
+
+.clients-table-wrap {
+  overflow-x: auto;
+}
+
+.clients-table {
+  width: 100%;
+  min-width: 740px;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.clients-table th,
+.clients-table td {
+  border-top: 1px solid #edf0f5;
+  padding: 13px 20px;
+}
+
+.clients-table th {
+  background: #fafbfd;
+  color: #9aa5b4;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.clients-table td {
+  color: #637086;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.client-company,
+.client-contact {
+  display: flex;
+}
+
+.client-company {
+  align-items: center;
+  gap: 9px;
+  color: #344157;
+  font-weight: 700;
+}
+
+.client-company__avatar {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  place-items: center;
+  border-radius: 6px;
+  background: #edf2fa;
+  color: #4c648d;
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.client-contact {
+  flex-direction: column;
+  gap: 2px;
+  color: #4e5c73;
+}
+
+.client-contact small {
+  color: #a0a9b7;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.clients-table__value {
+  color: #344157 !important;
+  font-weight: 700 !important;
+}
+
+.client-status {
+  display: inline-flex;
+  border-radius: 12px;
+  padding: 4px 8px;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.client-status--green {
+  background: #e7f5ef;
+  color: #25785f;
+}
+
+.client-status--blue {
+  background: #e9f0fc;
+  color: #3b68b5;
+}
+
+.client-status--violet {
+  background: #f0edfa;
+  color: #7162a7;
+}
+
+.client-status--amber {
+  background: #fbf1df;
+  color: #a97527;
+}
+
+.clients-table__action {
+  border: 0;
+  background: transparent;
+  color: #8d98a8;
+  cursor: pointer;
+  font-size: 15px;
+  line-height: 1;
+}
+
 .sidebar__brand-name {
   color: #172033;
   font-size: 15px;
