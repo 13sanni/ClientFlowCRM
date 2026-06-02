@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import './App.css'
 import MetricCard from './components/dashboard/MetricCard'
+import RevenueOverview from './components/dashboard/RevenueOverview'
 import Sidebar from './components/layout/Sidebar'
 import Topbar from './components/layout/Topbar'
 
@@ -27,6 +28,7 @@ function App() {
               <MetricCard key={metric.label} {...metric} />
             ))}
           </section>
+          <RevenueOverview />
         </main>
       </div>
     </div>

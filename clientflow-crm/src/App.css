@@ -148,6 +148,200 @@
   font-weight: 600;
 }
 
+.revenue-panel {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 260px;
+  margin-top: 16px;
+  border: 1px solid #e5eaf1;
+  border-radius: 7px;
+  background: #ffffff;
+}
+
+.revenue-panel__chart {
+  min-width: 0;
+  padding: 20px 20px 10px;
+}
+
+.panel-heading,
+.pipeline-stage__details {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.panel-heading p,
+.panel-heading h2,
+.revenue-panel__summary p,
+.pipeline-summary p,
+.pipeline-summary h2,
+.pipeline-stage p {
+  margin: 0;
+}
+
+.panel-heading__eyebrow {
+  color: #98a3b3;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.panel-heading h2,
+.pipeline-summary h2 {
+  margin-top: 5px;
+  color: #253046;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+.panel-heading__filter {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid #e0e5ed;
+  border-radius: 6px;
+  background: #ffffff;
+  padding: 7px 9px;
+  color: #66758a;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.panel-heading__filter:hover {
+  border-color: #b9c6d8;
+}
+
+.revenue-panel__summary {
+  display: flex;
+  align-items: baseline;
+  gap: 9px;
+  margin-top: 20px;
+}
+
+.revenue-panel__summary p {
+  color: #1d293d;
+  font-size: 25px;
+  font-weight: 700;
+}
+
+.revenue-panel__summary span {
+  color: #238064;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.revenue-chart {
+  margin-top: 6px;
+}
+
+.revenue-chart__svg {
+  display: block;
+  width: 100%;
+  min-height: 190px;
+}
+
+.revenue-chart__grid-line {
+  stroke: #edf0f5;
+  stroke-width: 1;
+}
+
+.revenue-chart__line {
+  fill: none;
+  stroke: #3970d4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 3;
+}
+
+.revenue-chart__point {
+  fill: #ffffff;
+  stroke: #3970d4;
+  stroke-width: 3;
+}
+
+.revenue-chart__month {
+  fill: #9ca6b5;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.pipeline-summary {
+  border-left: 1px solid #e8ecf2;
+  padding: 20px;
+}
+
+.pipeline-summary__heading span {
+  display: block;
+  margin-top: 4px;
+  color: #94a0b1;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.pipeline-summary__stages {
+  display: grid;
+  gap: 17px;
+  margin-top: 25px;
+}
+
+.pipeline-stage__details p {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: #69778b;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.pipeline-stage__details > span {
+  color: #35435a;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.pipeline-stage__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+
+.pipeline-stage__track {
+  height: 4px;
+  margin-top: 8px;
+  overflow: hidden;
+  border-radius: 3px;
+  background: #eef1f5;
+}
+
+.pipeline-stage__progress {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+}
+
+.pipeline-stage__dot--blue,
+.pipeline-stage__progress--blue {
+  background: #4a78d0;
+}
+
+.pipeline-stage__dot--green,
+.pipeline-stage__progress--green {
+  background: #329477;
+}
+
+.pipeline-stage__dot--amber,
+.pipeline-stage__progress--amber {
+  background: #d79b39;
+}
+
+.pipeline-stage__dot--violet,
+.pipeline-stage__progress--violet {
+  background: #7968b6;
+}
+
 .sidebar__brand-name {
   color: #172033;
   font-size: 15px;
@@ -552,10 +746,33 @@
   .metrics-grid {
     grid-template-columns: 1fr;
   }
+
+  .revenue-panel {
+    grid-template-columns: 1fr;
+  }
+
+  .pipeline-summary {
+    border-top: 1px solid #e8ecf2;
+    border-left: 0;
+  }
+
+  .revenue-panel__summary {
+    display: grid;
+    gap: 3px;
+  }
 }
 
 @media (min-width: 521px) and (max-width: 1100px) {
   .metrics-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .revenue-panel {
+    grid-template-columns: 1fr;
+  }
+
+  .pipeline-summary {
+    border-top: 1px solid #e8ecf2;
+    border-left: 0;
   }
 }
