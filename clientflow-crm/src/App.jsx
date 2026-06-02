@@ -6,6 +6,7 @@ import RecentClients from './components/dashboard/RecentClients'
 import RevenueOverview from './components/dashboard/RevenueOverview'
 import Sidebar from './components/layout/Sidebar'
 import Topbar from './components/layout/Topbar'
+import ClientsPage from './components/pages/ClientsPage'
 
 const metrics = [
   { label: 'Total clients', value: '1,284', change: '12.5%', trend: 'up', tone: 'blue' },
@@ -16,24 +17,34 @@ const metrics = [
 
 function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+  const [activePage, setActivePage] = useState('Overview')
 
   return (
     <div className="app-shell">
-      <Sidebar open={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+      <Sidebar
+        activePage={activePage}
+        open={isSidebarOpen}
+        onClose={() => setIsSidebarOpen(false)}
+        onNavigate={setActivePage}
+      />
       <div className="app-main">
         <Topbar onOpenSidebar={() => setIsSidebarOpen(true)} />
-        <main className="app-content">
-          <p className="app-content__eyebrow">Workspace overview</p>
-          <h1>Dashboard</h1>
-          <section className="metrics-grid" aria-label="CRM metrics">
-            {metrics.map((metric) => (
-              <MetricCard key={metric.label} {...metric} />
-            ))}
-          </section>
-          <RevenueOverview />
-          <RecentClients />
-          <ActivityPanels />
-        </main>
+        {activePage === 'Clients' ? (
+          <ClientsPage />
+        ) : (
+          <main className="app-content">
+            <p className="app-content__eyebrow">Workspace overview</p>
+            <h1>Dashboard</h1>
+            <section className="metrics-grid" aria-label="CRM metrics">
+              {metrics.map((metric) => (
+                <MetricCard key={metric.label} {...metric} />
+              ))}
+            </section>
+            <RevenueOverview />
+            <RecentClients />
+            <ActivityPanels />
+          </main>
+        )}
       </div>
     </div>
   )

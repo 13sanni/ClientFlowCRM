@@ -1,27 +1,26 @@
-const navigationItems = [
-  'Overview',
-  'Clients',
-  'Deals',
-  'Tasks',
-  'Invoices',
-  'Reports',
-]
+const navigationItems = ['Overview', 'Clients', 'Deals', 'Tasks', 'Invoices', 'Reports']
 
 const secondaryItems = ['Settings', 'Help center']
 
-function NavigationLink({ label, active = false }) {
+function NavigationLink({ label, active = false, onClick }) {
   return (
-    <a
+    <button
       className={`sidebar-link${active ? ' sidebar-link--active' : ''}`}
-      href={`#${label.toLowerCase().replace(' ', '-')}`}
+      type="button"
+      onClick={onClick}
     >
       <span className="sidebar-link__marker" aria-hidden="true" />
       <span>{label}</span>
-    </a>
+    </button>
   )
 }
 
-function Sidebar({ open = false, onClose }) {
+function Sidebar({ activePage = 'Overview', open = false, onClose, onNavigate }) {
+  const handleNavigate = (page) => {
+    onNavigate(page)
+    onClose()
+  }
+
   return (
     <>
       <button
@@ -61,13 +60,23 @@ function Sidebar({ open = false, onClose }) {
         <nav className="sidebar__nav" aria-label="Main navigation">
           <p className="sidebar__section-label">Workspace</p>
           {navigationItems.map((item) => (
-            <NavigationLink key={item} label={item} active={item === 'Overview'} />
+            <NavigationLink
+              key={item}
+              label={item}
+              active={item === activePage}
+              onClick={() => handleNavigate(item)}
+            />
           ))}
         </nav>
 
         <nav className="sidebar__nav sidebar__nav--secondary" aria-label="Support">
           {secondaryItems.map((item) => (
-            <NavigationLink key={item} label={item} />
+            <NavigationLink
+              key={item}
+              label={item}
+              active={item === activePage}
+              onClick={() => handleNavigate(item)}
+            />
           ))}
         </nav>
 
