@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import './App.css'
+import ActivityPanels from './components/dashboard/ActivityPanels'
 import MetricCard from './components/dashboard/MetricCard'
 import RecentClients from './components/dashboard/RecentClients'
 import RevenueOverview from './components/dashboard/RevenueOverview'
@@ -31,6 +32,7 @@ function App() {
           </section>
           <RevenueOverview />
           <RecentClients />
+          <ActivityPanels />
         </main>
       </div>
     </div>
