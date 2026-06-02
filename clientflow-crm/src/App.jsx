@@ -7,6 +7,7 @@ import RevenueOverview from './components/dashboard/RevenueOverview'
 import Sidebar from './components/layout/Sidebar'
 import Topbar from './components/layout/Topbar'
 import ClientsPage from './components/pages/ClientsPage'
+import DealsPage from './components/pages/DealsPage'
 
 const metrics = [
   { label: 'Total clients', value: '1,284', change: '12.5%', trend: 'up', tone: 'blue' },
@@ -29,9 +30,9 @@ function App() {
       />
       <div className="app-main">
         <Topbar onOpenSidebar={() => setIsSidebarOpen(true)} />
-        {activePage === 'Clients' ? (
-          <ClientsPage />
-        ) : (
+        {activePage === 'Clients' && <ClientsPage />}
+        {activePage === 'Deals' && <DealsPage />}
+        {activePage !== 'Clients' && activePage !== 'Deals' && (
           <main className="app-content">
             <p className="app-content__eyebrow">Workspace overview</p>
             <h1>Dashboard</h1>
