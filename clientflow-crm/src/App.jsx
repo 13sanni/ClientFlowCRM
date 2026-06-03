@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Navigate, Route, Routes } from 'react-router-dom'
 import './App.css'
 import ActivityPanels from './components/dashboard/ActivityPanels'
 import MetricCard from './components/dashboard/MetricCard'
@@ -18,36 +19,45 @@ const metrics = [
 
 function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
-  const [activePage, setActivePage] = useState('Overview')
 
   return (
-    <div className="app-shell">
+    <div className="flex min-h-screen">
       <Sidebar
-        activePage={activePage}
         open={isSidebarOpen}
         onClose={() => setIsSidebarOpen(false)}
-        onNavigate={setActivePage}
       />
-      <div className="app-main">
+      <div className="min-w-0 flex-1">
         <Topbar onOpenSidebar={() => setIsSidebarOpen(true)} />
-        {activePage === 'Clients' && <ClientsPage />}
-        {activePage === 'Deals' && <DealsPage />}
-        {activePage !== 'Clients' && activePage !== 'Deals' && (
-          <main className="app-content">
-            <p className="app-content__eyebrow">Workspace overview</p>
-            <h1>Dashboard</h1>
-            <section className="metrics-grid" aria-label="CRM metrics">
-              {metrics.map((metric) => (
-                <MetricCard key={metric.label} {...metric} />
-              ))}
-            </section>
-            <RevenueOverview />
-            <RecentClients />
-            <ActivityPanels />
-          </main>
-        )}
+        <Routes>
+          <Route path="/" element={<DashboardPage />} />
+          <Route path="/clients" element={<ClientsPage />} />
+          <Route path="/deals" element={<DealsPage />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
       </div>
     </div>
+  )
+}
+
+function DashboardPage() {
+  return (
+    <main className="px-10 py-9 max-[520px]:px-6 max-[520px]:py-7">
+      <p className="m-0 text-xs font-bold uppercase tracking-normal text-slate-500">
+        Workspace overview
+      </p>
+      <h1 className="mt-2 text-[29px] font-bold tracking-normal text-slate-900">Dashboard</h1>
+      <section
+        className="mt-6 grid grid-cols-4 gap-3.5 max-[520px]:grid-cols-1 min-[521px]:max-[1100px]:grid-cols-2"
+        aria-label="CRM metrics"
+      >
+        {metrics.map((metric) => (
+          <MetricCard key={metric.label} {...metric} />
+        ))}
+      </section>
+      <RevenueOverview />
+      <RecentClients />
+      <ActivityPanels />
+    </main>
   )
 }
 
