@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
-import './App.css'
 import ActivityPanels from './components/dashboard/ActivityPanels'
 import MetricCard from './components/dashboard/MetricCard'
 import RecentClients from './components/dashboard/RecentClients'
@@ -10,6 +9,7 @@ import Topbar from './components/layout/Topbar'
 import ClientsPage from './components/pages/ClientsPage'
 import DealsPage from './components/pages/DealsPage'
 import ForgotPasswordPage from './components/pages/ForgotPasswordPage'
+import HelpCenterPage from './components/pages/HelpCenterPage'
 import InvoicesPage from './components/pages/InvoicesPage'
 import ReportsPage from './components/pages/ReportsPage'
 import SettingsPage from './components/pages/SettingsPage'
@@ -54,6 +54,7 @@ function DashboardShell() {
           <Route path="/invoices" element={<InvoicesPage />} />
           <Route path="/reports" element={<ReportsPage />} />
           <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/help" element={<HelpCenterPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </div>

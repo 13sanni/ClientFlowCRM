@@ -13,7 +13,7 @@ const navigationItems = [
 
 const secondaryItems = [
   { label: 'Settings', path: '/settings' },
-  { label: 'Help center', path: '/', enabled: false },
+  { label: 'Help center', path: '/help' },
 ]
 
 function NavigationLink({ item, onClose }) {
