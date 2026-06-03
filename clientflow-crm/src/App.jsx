@@ -9,6 +9,8 @@ import Sidebar from './components/layout/Sidebar'
 import Topbar from './components/layout/Topbar'
 import ClientsPage from './components/pages/ClientsPage'
 import DealsPage from './components/pages/DealsPage'
+import InvoicesPage from './components/pages/InvoicesPage'
+import TasksPage from './components/pages/TasksPage'
 
 const metrics = [
   { label: 'Total clients', value: '1,284', change: '12.5%', trend: 'up', tone: 'blue' },
@@ -32,6 +34,8 @@ function App() {
           <Route path="/" element={<DashboardPage />} />
           <Route path="/clients" element={<ClientsPage />} />
           <Route path="/deals" element={<DealsPage />} />
+          <Route path="/tasks" element={<TasksPage />} />
+          <Route path="/invoices" element={<InvoicesPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </div>

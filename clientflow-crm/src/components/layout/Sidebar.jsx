@@ -6,8 +6,8 @@ const navigationItems = [
   { label: 'Overview', path: '/' },
   { label: 'Clients', path: '/clients' },
   { label: 'Deals', path: '/deals' },
-  { label: 'Tasks', path: '/', enabled: false },
-  { label: 'Invoices', path: '/', enabled: false },
+  { label: 'Tasks', path: '/tasks' },
+  { label: 'Invoices', path: '/invoices' },
   { label: 'Reports', path: '/', enabled: false },
 ]
 
