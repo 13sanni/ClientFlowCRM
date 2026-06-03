@@ -12,7 +12,7 @@ const navigationItems = [
 ]
 
 const secondaryItems = [
-  { label: 'Settings', path: '/', enabled: false },
+  { label: 'Settings', path: '/settings' },
   { label: 'Help center', path: '/', enabled: false },
 ]
 

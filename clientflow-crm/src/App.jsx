@@ -9,8 +9,12 @@ import Sidebar from './components/layout/Sidebar'
 import Topbar from './components/layout/Topbar'
 import ClientsPage from './components/pages/ClientsPage'
 import DealsPage from './components/pages/DealsPage'
+import ForgotPasswordPage from './components/pages/ForgotPasswordPage'
 import InvoicesPage from './components/pages/InvoicesPage'
 import ReportsPage from './components/pages/ReportsPage'
+import SettingsPage from './components/pages/SettingsPage'
+import SignInPage from './components/pages/SignInPage'
+import SignUpPage from './components/pages/SignUpPage'
 import TasksPage from './components/pages/TasksPage'
 
 const metrics = [
@@ -21,6 +25,17 @@ const metrics = [
 ]
 
 function App() {
+  return (
+    <Routes>
+      <Route path="/auth/sign-in" element={<SignInPage />} />
+      <Route path="/auth/sign-up" element={<SignUpPage />} />
+      <Route path="/auth/forgot-password" element={<ForgotPasswordPage />} />
+      <Route path="/*" element={<DashboardShell />} />
+    </Routes>
+  )
+}
+
+function DashboardShell() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
 
   return (
@@ -38,6 +53,7 @@ function App() {
           <Route path="/tasks" element={<TasksPage />} />
           <Route path="/invoices" element={<InvoicesPage />} />
           <Route path="/reports" element={<ReportsPage />} />
+          <Route path="/settings" element={<SettingsPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </div>
