@@ -10,6 +10,7 @@ import Topbar from './components/layout/Topbar'
 import ClientsPage from './components/pages/ClientsPage'
 import DealsPage from './components/pages/DealsPage'
 import InvoicesPage from './components/pages/InvoicesPage'
+import ReportsPage from './components/pages/ReportsPage'
 import TasksPage from './components/pages/TasksPage'
 
 const metrics = [
@@ -36,6 +37,7 @@ function App() {
           <Route path="/deals" element={<DealsPage />} />
           <Route path="/tasks" element={<TasksPage />} />
           <Route path="/invoices" element={<InvoicesPage />} />
+          <Route path="/reports" element={<ReportsPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </div>

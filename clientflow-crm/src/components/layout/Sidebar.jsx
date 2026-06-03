@@ -8,7 +8,7 @@ const navigationItems = [
   { label: 'Deals', path: '/deals' },
   { label: 'Tasks', path: '/tasks' },
   { label: 'Invoices', path: '/invoices' },
-  { label: 'Reports', path: '/', enabled: false },
+  { label: 'Reports', path: '/reports' },
 ]
 
 const secondaryItems = [
