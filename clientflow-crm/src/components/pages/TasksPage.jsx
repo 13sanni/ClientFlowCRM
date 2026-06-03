@@ -1,3 +1,5 @@
+import { useState } from 'react'
+import ActionModal from '../common/ActionModal'
 import { cn } from '../../lib/utils'
 
 const taskSummary = [
@@ -63,6 +65,8 @@ const statusStyles = {
 }
 
 function TasksPage() {
+  const [isNewTaskOpen, setIsNewTaskOpen] = useState(false)
+
   return (
     <main className="px-10 py-9 max-[520px]:px-6 max-[520px]:py-7">
       <div className="flex items-start justify-between gap-4 max-[520px]:flex-col">
@@ -75,6 +79,7 @@ function TasksPage() {
         <button
           className="rounded-md border-0 bg-blue-700 px-3.5 py-2.5 text-xs font-bold text-white hover:bg-blue-800"
           type="button"
+          onClick={() => setIsNewTaskOpen(true)}
         >
           New task
         </button>
@@ -168,6 +173,38 @@ function TasksPage() {
           </table>
         </div>
       </section>
+
+      {isNewTaskOpen && (
+        <ActionModal
+          title="New task"
+          description="Assign work to a teammate. This form is ready for validation wiring later."
+          primaryLabel="Create task"
+          onClose={() => setIsNewTaskOpen(false)}
+        >
+          <label className="grid gap-1.5">
+            <span className="text-[11px] font-bold text-slate-500">Task title</span>
+            <input className="rounded-md border border-slate-200 px-3 py-2 text-sm outline-none focus:border-blue-300" placeholder="Follow up with client" />
+          </label>
+          <div className="grid grid-cols-2 gap-3 max-[520px]:grid-cols-1">
+            <label className="grid gap-1.5">
+              <span className="text-[11px] font-bold text-slate-500">Owner</span>
+              <select className="rounded-md border border-slate-200 px-3 py-2 text-sm outline-none focus:border-blue-300">
+                <option>Jordan Davis</option>
+                <option>Maya Patel</option>
+                <option>Luis Garcia</option>
+              </select>
+            </label>
+            <label className="grid gap-1.5">
+              <span className="text-[11px] font-bold text-slate-500">Priority</span>
+              <select className="rounded-md border border-slate-200 px-3 py-2 text-sm outline-none focus:border-blue-300">
+                <option>High</option>
+                <option>Medium</option>
+                <option>Low</option>
+              </select>
+            </label>
+          </div>
+        </ActionModal>
+      )}
     </main>
   )
 }

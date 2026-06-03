@@ -1,3 +1,6 @@
+import { useState } from 'react'
+import ActionModal from '../common/ActionModal'
+
 const helpTopics = [
   {
     title: 'Getting started',
@@ -20,6 +23,9 @@ const supportOptions = [
 ]
 
 function HelpCenterPage() {
+  const [isContactOpen, setIsContactOpen] = useState(false)
+  const [activeGuide, setActiveGuide] = useState(null)
+
   return (
     <main className="px-10 py-9 max-[520px]:px-6 max-[520px]:py-7">
       <div className="flex items-start justify-between gap-4 max-[520px]:flex-col">
@@ -32,6 +38,7 @@ function HelpCenterPage() {
         <button
           className="rounded-md border border-slate-200 bg-white px-3.5 py-2.5 text-xs font-bold text-slate-600 hover:border-slate-300"
           type="button"
+          onClick={() => setIsContactOpen(true)}
         >
           Contact support
         </button>
@@ -68,6 +75,7 @@ function HelpCenterPage() {
               <button
                 className="whitespace-nowrap rounded-md border border-slate-200 bg-white px-2.5 py-2 text-[11px] font-bold text-slate-500 hover:border-slate-300"
                 type="button"
+                onClick={() => setActiveGuide(topic)}
               >
                 Open guide
               </button>
@@ -75,6 +83,40 @@ function HelpCenterPage() {
           ))}
         </div>
       </section>
+
+      {isContactOpen && (
+        <ActionModal
+          title="Contact support"
+          description="Send a support request. This will connect to email/ticket workflow later."
+          primaryLabel="Send request"
+          onClose={() => setIsContactOpen(false)}
+        >
+          <label className="grid gap-1.5">
+            <span className="text-[11px] font-bold text-slate-500">Subject</span>
+            <input className="rounded-md border border-slate-200 px-3 py-2 text-sm outline-none focus:border-blue-300" placeholder="What do you need help with?" />
+          </label>
+          <label className="grid gap-1.5">
+            <span className="text-[11px] font-bold text-slate-500">Message</span>
+            <textarea className="min-h-24 rounded-md border border-slate-200 px-3 py-2 text-sm outline-none focus:border-blue-300" placeholder="Describe the issue" />
+          </label>
+        </ActionModal>
+      )}
+
+      {activeGuide && (
+        <ActionModal
+          title={activeGuide.title}
+          description={activeGuide.description}
+          primaryLabel="Close guide"
+          onClose={() => setActiveGuide(null)}
+        >
+          <div className="rounded-lg border border-slate-100 bg-slate-50 p-4">
+            <p className="m-0 text-sm font-bold text-slate-700">Guide preview</p>
+            <span className="mt-1 block text-xs font-semibold leading-5 text-slate-500">
+              Detailed documentation content will be added when the project gets real workflows and backend APIs.
+            </span>
+          </div>
+        </ActionModal>
+      )}
     </main>
   )
 }

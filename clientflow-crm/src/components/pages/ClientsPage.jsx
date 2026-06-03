@@ -1,3 +1,5 @@
+import { useState } from 'react'
+import ActionModal from '../common/ActionModal'
 import { cn } from '../../lib/utils'
 
 const clientSummary = [
@@ -57,6 +59,8 @@ const statusTone = {
 }
 
 function ClientsPage() {
+  const [isAddClientOpen, setIsAddClientOpen] = useState(false)
+
   return (
     <main className="px-10 py-9 max-[520px]:px-6 max-[520px]:py-7">
       <div className="flex items-start justify-between gap-4 max-[520px]:flex-col">
@@ -67,6 +71,7 @@ function ClientsPage() {
         <button
           className="rounded-md border-0 bg-blue-700 px-3.5 py-2.5 text-xs font-bold text-white hover:bg-blue-800"
           type="button"
+          onClick={() => setIsAddClientOpen(true)}
         >
           Add client
         </button>
@@ -156,6 +161,32 @@ function ClientsPage() {
           </table>
         </div>
       </section>
+
+      {isAddClientOpen && (
+        <ActionModal
+          title="Add client"
+          description="Capture a new account. This UI will connect to backend CRUD later."
+          primaryLabel="Add client"
+          onClose={() => setIsAddClientOpen(false)}
+        >
+          <label className="grid gap-1.5">
+            <span className="text-[11px] font-bold text-slate-500">Company name</span>
+            <input className="rounded-md border border-slate-200 px-3 py-2 text-sm outline-none focus:border-blue-300" placeholder="Acme Corp" />
+          </label>
+          <label className="grid gap-1.5">
+            <span className="text-[11px] font-bold text-slate-500">Contact email</span>
+            <input className="rounded-md border border-slate-200 px-3 py-2 text-sm outline-none focus:border-blue-300" placeholder="name@company.com" />
+          </label>
+          <label className="grid gap-1.5">
+            <span className="text-[11px] font-bold text-slate-500">Owner</span>
+            <select className="rounded-md border border-slate-200 px-3 py-2 text-sm outline-none focus:border-blue-300">
+              <option>Jordan Davis</option>
+              <option>Maya Patel</option>
+              <option>Luis Garcia</option>
+            </select>
+          </label>
+        </ActionModal>
+      )}
     </main>
   )
 }

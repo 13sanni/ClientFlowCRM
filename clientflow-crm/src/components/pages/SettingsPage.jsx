@@ -1,3 +1,6 @@
+import { useState } from 'react'
+import ActionModal from '../common/ActionModal'
+
 const notificationSettings = [
   'Deal stage changes',
   'Task assignments',
@@ -5,6 +8,8 @@ const notificationSettings = [
 ]
 
 function SettingsPage() {
+  const [isSaveOpen, setIsSaveOpen] = useState(false)
+
   return (
     <main className="px-10 py-9 max-[520px]:px-6 max-[520px]:py-7">
       <div className="flex items-start justify-between gap-4 max-[520px]:flex-col">
@@ -17,6 +22,7 @@ function SettingsPage() {
         <button
           className="rounded-md border-0 bg-blue-700 px-3.5 py-2.5 text-xs font-bold text-white hover:bg-blue-800"
           type="button"
+          onClick={() => setIsSaveOpen(true)}
         >
           Save changes
         </button>
@@ -130,6 +136,22 @@ function SettingsPage() {
           </div>
         </article>
       </section>
+
+      {isSaveOpen && (
+        <ActionModal
+          title="Settings saved"
+          description="This confirmation is UI-only. Backend persistence will be added with the API."
+          primaryLabel="Done"
+          onClose={() => setIsSaveOpen(false)}
+        >
+          <div className="rounded-lg border border-emerald-100 bg-emerald-50 p-4">
+            <p className="m-0 text-sm font-bold text-emerald-800">Workspace settings are ready to save.</p>
+            <span className="mt-1 block text-xs font-semibold text-emerald-700">
+              Form validation and persistence will use React Hook Form, Zod, and backend APIs.
+            </span>
+          </div>
+        </ActionModal>
+      )}
     </main>
   )
 }

@@ -1,4 +1,10 @@
+import { useState } from 'react'
+import { Link } from 'react-router-dom'
+import ActionModal from '../common/ActionModal'
+
 function ForgotPasswordPage() {
+  const [isDemoOpen, setIsDemoOpen] = useState(false)
+
   return (
     <main className="flex min-h-screen items-center justify-center bg-slate-50 px-6 py-10">
       <section className="w-full max-w-[430px] rounded-xl border border-slate-200 bg-white p-7 shadow-sm">
@@ -37,20 +43,34 @@ function ForgotPasswordPage() {
           <button
             className="rounded-md border-0 bg-blue-700 px-4 py-3 text-sm font-bold text-white hover:bg-blue-800"
             type="button"
+            onClick={() => setIsDemoOpen(true)}
           >
             Send reset link
           </button>
         </form>
 
         <div className="mt-5 flex items-center justify-between gap-3 text-xs font-semibold">
-          <a className="font-bold text-blue-700 no-underline hover:text-blue-800" href="/auth/sign-in">
+          <Link className="font-bold text-blue-700 no-underline hover:text-blue-800" to="/auth/sign-in">
             Back to sign in
-          </a>
-          <a className="font-bold text-slate-500 no-underline hover:text-slate-700" href="/auth/sign-up">
+          </Link>
+          <Link className="font-bold text-slate-500 no-underline hover:text-slate-700" to="/auth/sign-up">
             Create account
-          </a>
+          </Link>
         </div>
       </section>
+
+      {isDemoOpen && (
+        <ActionModal
+          title="Password reset preview"
+          description="The recovery UI is ready. Email delivery will be connected through the backend later."
+          primaryLabel="Got it"
+          onClose={() => setIsDemoOpen(false)}
+        >
+          <div className="rounded-lg border border-blue-100 bg-blue-50 p-4">
+            <p className="m-0 text-sm font-bold text-blue-800">Next backend step: reset tokens and email queue.</p>
+          </div>
+        </ActionModal>
+      )}
     </main>
   )
 }

@@ -1,3 +1,6 @@
+import { useState } from 'react'
+import ActionModal from '../common/ActionModal'
+
 const dealSummary = [
   { label: 'Open deals', value: '32' },
   { label: 'Pipeline value', value: '$86.4K' },
@@ -81,6 +84,8 @@ const stages = [
 ]
 
 function DealsPage() {
+  const [isNewDealOpen, setIsNewDealOpen] = useState(false)
+
   return (
     <main className="px-10 py-9 max-[520px]:px-6 max-[520px]:py-7">
       <div className="flex items-start justify-between gap-4 max-[520px]:flex-col">
@@ -93,6 +98,7 @@ function DealsPage() {
         <button
           className="rounded-md border-0 bg-blue-700 px-3.5 py-2.5 text-xs font-bold text-white hover:bg-blue-800"
           type="button"
+          onClick={() => setIsNewDealOpen(true)}
         >
           New deal
         </button>
@@ -149,6 +155,35 @@ function DealsPage() {
           </article>
         ))}
       </section>
+
+      {isNewDealOpen && (
+        <ActionModal
+          title="New deal"
+          description="Create a pipeline opportunity. This will become a persisted deal later."
+          primaryLabel="Create deal"
+          onClose={() => setIsNewDealOpen(false)}
+        >
+          <label className="grid gap-1.5">
+            <span className="text-[11px] font-bold text-slate-500">Deal title</span>
+            <input className="rounded-md border border-slate-200 px-3 py-2 text-sm outline-none focus:border-blue-300" placeholder="Expansion package" />
+          </label>
+          <div className="grid grid-cols-2 gap-3 max-[520px]:grid-cols-1">
+            <label className="grid gap-1.5">
+              <span className="text-[11px] font-bold text-slate-500">Value</span>
+              <input className="rounded-md border border-slate-200 px-3 py-2 text-sm outline-none focus:border-blue-300" placeholder="$12,000" />
+            </label>
+            <label className="grid gap-1.5">
+              <span className="text-[11px] font-bold text-slate-500">Stage</span>
+              <select className="rounded-md border border-slate-200 px-3 py-2 text-sm outline-none focus:border-blue-300">
+                <option>Qualified</option>
+                <option>Proposal</option>
+                <option>Negotiation</option>
+                <option>Closing</option>
+              </select>
+            </label>
+          </div>
+        </ActionModal>
+      )}
     </main>
   )
 }

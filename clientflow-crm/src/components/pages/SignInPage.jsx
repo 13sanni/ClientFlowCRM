@@ -1,4 +1,10 @@
+import { useState } from 'react'
+import { Link } from 'react-router-dom'
+import ActionModal from '../common/ActionModal'
+
 function SignInPage() {
+  const [isDemoOpen, setIsDemoOpen] = useState(false)
+
   return (
     <main className="grid min-h-screen grid-cols-[minmax(0,0.95fr)_minmax(420px,1.05fr)] bg-slate-50 max-[900px]:grid-cols-1">
       <section className="flex flex-col justify-between bg-slate-950 px-10 py-9 text-white max-[900px]:hidden">
@@ -66,14 +72,15 @@ function SignInPage() {
                 <input className="h-4 w-4 accent-blue-600" type="checkbox" />
                 Remember me
               </label>
-              <a className="text-xs font-bold text-blue-700 no-underline hover:text-blue-800" href="/auth/forgot-password">
+              <Link className="text-xs font-bold text-blue-700 no-underline hover:text-blue-800" to="/auth/forgot-password">
                 Forgot password?
-              </a>
+              </Link>
             </div>
 
             <button
               className="mt-2 rounded-md border-0 bg-blue-700 px-4 py-3 text-sm font-bold text-white hover:bg-blue-800"
               type="button"
+              onClick={() => setIsDemoOpen(true)}
             >
               Sign in
             </button>
@@ -81,12 +88,25 @@ function SignInPage() {
 
           <p className="mt-5 text-center text-xs font-semibold text-slate-500">
             New to ClientFlow?{' '}
-            <a className="font-bold text-blue-700 no-underline hover:text-blue-800" href="/auth/sign-up">
+            <Link className="font-bold text-blue-700 no-underline hover:text-blue-800" to="/auth/sign-up">
               Create account
-            </a>
+            </Link>
           </p>
         </div>
       </section>
+
+      {isDemoOpen && (
+        <ActionModal
+          title="Sign in preview"
+          description="The sign-in UI is ready. Real authentication will be connected when the backend is added."
+          primaryLabel="Got it"
+          onClose={() => setIsDemoOpen(false)}
+        >
+          <div className="rounded-lg border border-blue-100 bg-blue-50 p-4">
+            <p className="m-0 text-sm font-bold text-blue-800">Next backend step: JWT + HTTP-only cookies.</p>
+          </div>
+        </ActionModal>
+      )}
     </main>
   )
 }

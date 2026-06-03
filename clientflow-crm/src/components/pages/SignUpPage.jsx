@@ -1,4 +1,10 @@
+import { useState } from 'react'
+import { Link } from 'react-router-dom'
+import ActionModal from '../common/ActionModal'
+
 function SignUpPage() {
+  const [isDemoOpen, setIsDemoOpen] = useState(false)
+
   return (
     <main className="grid min-h-screen grid-cols-[minmax(420px,1.05fr)_minmax(0,0.95fr)] bg-slate-50 max-[900px]:grid-cols-1">
       <section className="flex items-center justify-center px-6 py-10">
@@ -55,6 +61,7 @@ function SignUpPage() {
             <button
               className="mt-2 rounded-md border-0 bg-blue-700 px-4 py-3 text-sm font-bold text-white hover:bg-blue-800"
               type="button"
+              onClick={() => setIsDemoOpen(true)}
             >
               Create workspace
             </button>
@@ -62,9 +69,9 @@ function SignUpPage() {
 
           <p className="mt-5 text-center text-xs font-semibold text-slate-500">
             Already have an account?{' '}
-            <a className="font-bold text-blue-700 no-underline hover:text-blue-800" href="/auth/sign-in">
+            <Link className="font-bold text-blue-700 no-underline hover:text-blue-800" to="/auth/sign-in">
               Sign in
-            </a>
+            </Link>
           </p>
         </div>
       </section>
@@ -98,6 +105,19 @@ function SignUpPage() {
           ))}
         </div>
       </section>
+
+      {isDemoOpen && (
+        <ActionModal
+          title="Workspace signup preview"
+          description="The signup form is ready. Real workspace creation will be connected to auth and database APIs."
+          primaryLabel="Got it"
+          onClose={() => setIsDemoOpen(false)}
+        >
+          <div className="rounded-lg border border-blue-100 bg-blue-50 p-4">
+            <p className="m-0 text-sm font-bold text-blue-800">Next backend step: user, workspace, and role models.</p>
+          </div>
+        </ActionModal>
+      )}
     </main>
   )
 }
