@@ -1,3 +1,5 @@
+import { useState } from 'react'
+import ActionDropdown from '../common/ActionDropdown'
 import { cn } from '../../lib/utils'
 
 const revenueData = [
@@ -33,6 +35,8 @@ const chartPoints = revenueData
   .join(' ')
 
 function RevenueOverview() {
+  const [selectedRange, setSelectedRange] = useState('Last 6 months')
+
   return (
     <section
       className="mt-4 grid grid-cols-[minmax(0,1fr)_260px] rounded-lg border border-slate-200 bg-white max-[1100px]:grid-cols-1"
@@ -48,13 +52,18 @@ function RevenueOverview() {
               Revenue overview
             </h2>
           </div>
-          <button
-            className="flex cursor-pointer items-center gap-1.5 rounded-md border border-slate-200 bg-white px-2.5 py-2 text-[11px] font-bold text-slate-500 hover:border-slate-300"
-            type="button"
-          >
-            Last 6 months
-            <span aria-hidden="true">&#8964;</span>
-          </button>
+          <ActionDropdown label={selectedRange}>
+            {['Last 30 days', 'Last 6 months', 'Year to date'].map((range) => (
+              <button
+                className="block w-full rounded-md border-0 bg-transparent px-2 py-2 text-left text-xs font-bold text-slate-600 hover:bg-slate-100"
+                key={range}
+                type="button"
+                onClick={() => setSelectedRange(range)}
+              >
+                {range}
+              </button>
+            ))}
+          </ActionDropdown>
         </div>
 
         <div className="mt-5 flex items-baseline gap-2.5 max-[520px]:grid max-[520px]:gap-1">

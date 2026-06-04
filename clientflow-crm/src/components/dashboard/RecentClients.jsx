@@ -1,3 +1,7 @@
+import { useState } from 'react'
+import { Link } from 'react-router-dom'
+import ActionDropdown from '../common/ActionDropdown'
+import ActionModal from '../common/ActionModal'
 import { cn } from '../../lib/utils'
 
 const clients = [
@@ -61,6 +65,8 @@ const statusStyles = {
 }
 
 function RecentClients() {
+  const [clientAction, setClientAction] = useState(null)
+
   return (
     <section
       className="mt-4 rounded-lg border border-slate-200 bg-white"
@@ -75,9 +81,9 @@ function RecentClients() {
             Recent clients
           </h2>
         </div>
-        <button className="border-0 bg-transparent text-[11px] font-bold text-blue-700 hover:text-blue-800" type="button">
+        <Link className="border-0 bg-transparent text-[11px] font-bold text-blue-700 no-underline hover:text-blue-800" to="/clients">
           View all clients
-        </button>
+        </Link>
       </div>
 
       <div className="overflow-x-auto">
@@ -133,19 +139,43 @@ function RecentClients() {
                   </span>
                 </td>
                 <td className="whitespace-nowrap border-t border-slate-100 px-5 py-3 text-xs font-semibold text-slate-500">
-                  <button
-                    className="border-0 bg-transparent text-[15px] leading-none text-slate-400"
-                    type="button"
-                    aria-label={`Open ${client.company}`}
+                  <ActionDropdown
+                    label="..."
+                    buttonClassName="border-0 bg-transparent px-1 py-0 text-[15px] leading-none text-slate-400 hover:border-0"
                   >
-                    ...
-                  </button>
+                    {['Open profile', 'Create task', 'Log activity'].map((action) => (
+                      <button
+                        className="block w-full rounded-md border-0 bg-transparent px-2 py-2 text-left text-xs font-bold text-slate-600 hover:bg-slate-100"
+                        key={action}
+                        type="button"
+                        onClick={() => setClientAction({ action, client })}
+                      >
+                        {action}
+                      </button>
+                    ))}
+                  </ActionDropdown>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
+
+      {clientAction && (
+        <ActionModal
+          title={clientAction.action}
+          description={`${clientAction.client.company} - ${clientAction.client.contact}`}
+          primaryLabel="Done"
+          onClose={() => setClientAction(null)}
+        >
+          <div className="rounded-lg border border-slate-100 bg-slate-50 p-4">
+            <p className="m-0 text-sm font-bold text-slate-700">{clientAction.client.company}</p>
+            <span className="mt-1 block text-xs font-semibold leading-5 text-slate-500">
+              This row action is ready for profile, task, and activity workflows when the backend is connected.
+            </span>
+          </div>
+        </ActionModal>
+      )}
     </section>
   )
 }

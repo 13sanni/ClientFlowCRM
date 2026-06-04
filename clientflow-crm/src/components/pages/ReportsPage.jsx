@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import ActionDropdown from '../common/ActionDropdown'
 import ActionModal from '../common/ActionModal'
 import { cn } from '../../lib/utils'
 
@@ -24,6 +25,7 @@ const performanceRows = [
 
 function ReportsPage() {
   const [isExportOpen, setIsExportOpen] = useState(false)
+  const [rangeFilter, setRangeFilter] = useState('This quarter')
 
   return (
     <main className="px-10 py-9 max-[520px]:px-6 max-[520px]:py-7">
@@ -89,12 +91,18 @@ function ReportsPage() {
               </p>
               <h2 className="mt-1 text-base font-bold text-slate-700">Revenue sources</h2>
             </div>
-            <button
-              className="rounded-md border border-slate-200 bg-white px-2.5 py-2 text-[11px] font-bold text-slate-500 hover:border-slate-300"
-              type="button"
-            >
-              This quarter
-            </button>
+            <ActionDropdown label={rangeFilter}>
+              {['This quarter', 'Last quarter', 'Year to date', 'Last 12 months'].map((range) => (
+                <button
+                  className="block w-full rounded-md border-0 bg-transparent px-2 py-2 text-left text-xs font-bold text-slate-600 hover:bg-slate-100"
+                  key={range}
+                  type="button"
+                  onClick={() => setRangeFilter(range)}
+                >
+                  {range}
+                </button>
+              ))}
+            </ActionDropdown>
           </div>
 
           <div className="overflow-x-auto">

@@ -1,3 +1,5 @@
+import { useState } from 'react'
+import ActionModal from '../common/ActionModal'
 import { cn } from '../../lib/utils'
 
 const tasks = [
@@ -61,6 +63,8 @@ const priorityStyles = {
 }
 
 function ActivityPanels() {
+  const [modal, setModal] = useState(null)
+
   return (
     <section
       className="mt-4 grid grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] gap-4 max-[1100px]:grid-cols-1"
@@ -77,6 +81,7 @@ function ActivityPanels() {
           <button
             className="rounded-md border border-slate-200 bg-white px-2.5 py-2 text-[11px] font-bold text-slate-500 hover:border-slate-300"
             type="button"
+            onClick={() => setModal('task')}
           >
             Add task
           </button>
@@ -114,6 +119,7 @@ function ActivityPanels() {
           <button
             className="rounded-md border border-slate-200 bg-white px-2.5 py-2 text-[11px] font-bold text-slate-500 hover:border-slate-300"
             type="button"
+            onClick={() => setModal('log')}
           >
             View log
           </button>
@@ -135,6 +141,49 @@ function ActivityPanels() {
           ))}
         </ol>
       </article>
+
+      {modal === 'task' && (
+        <ActionModal
+          title="Add dashboard task"
+          description="Create a quick task from the dashboard queue."
+          primaryLabel="Add task"
+          onClose={() => setModal(null)}
+        >
+          <label className="grid gap-1.5">
+            <span className="text-[11px] font-bold text-slate-500">Task title</span>
+            <input
+              className="rounded-md border border-slate-200 px-3 py-2 text-sm outline-none focus:border-blue-300"
+              placeholder="Call client"
+            />
+          </label>
+          <label className="grid gap-1.5">
+            <span className="text-[11px] font-bold text-slate-500">Priority</span>
+            <select className="rounded-md border border-slate-200 px-3 py-2 text-sm outline-none focus:border-blue-300">
+              <option>High</option>
+              <option>Medium</option>
+              <option>Low</option>
+            </select>
+          </label>
+        </ActionModal>
+      )}
+
+      {modal === 'log' && (
+        <ActionModal
+          title="Activity log"
+          description="Recent CRM updates. This will become a full audit trail later."
+          primaryLabel="Close"
+          onClose={() => setModal(null)}
+        >
+          {activities.map((activity) => (
+            <div className="rounded-md border border-slate-100 p-3" key={activity.title}>
+              <p className="m-0 text-xs font-bold text-slate-700">{activity.title}</p>
+              <span className="mt-1 block text-[11px] font-semibold text-slate-400">
+                {activity.detail}
+              </span>
+            </div>
+          ))}
+        </ActionModal>
+      )}
     </section>
   )
 }

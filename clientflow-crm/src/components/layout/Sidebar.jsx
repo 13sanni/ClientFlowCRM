@@ -1,5 +1,7 @@
+import { useState } from 'react'
 import { X } from 'lucide-react'
 import { NavLink } from 'react-router-dom'
+import ActionDropdown from '../common/ActionDropdown'
 import { cn } from '../../lib/utils'
 
 const navigationItems = [
@@ -14,6 +16,12 @@ const navigationItems = [
 const secondaryItems = [
   { label: 'Settings', path: '/settings' },
   { label: 'Help center', path: '/help' },
+]
+
+const workspaces = [
+  { name: 'Acme Studio', plan: 'Business plan', initial: 'A' },
+  { name: 'Northstar Sales', plan: 'Team plan', initial: 'N' },
+  { name: 'ClientFlow Demo', plan: 'Sandbox', initial: 'C' },
 ]
 
 function NavigationLink({ item, onClose }) {
@@ -52,6 +60,8 @@ function NavigationLink({ item, onClose }) {
 }
 
 function Sidebar({ open = false, onClose }) {
+  const [workspace, setWorkspace] = useState(workspaces[0])
+
   return (
     <>
       <button
@@ -87,21 +97,37 @@ function Sidebar({ open = false, onClose }) {
           </button>
         </div>
 
-        <button
-          className="mt-6 flex w-full cursor-pointer items-center gap-2 rounded-md border border-slate-200 bg-white p-2 text-left text-slate-900 transition hover:border-slate-300"
-          type="button"
+        <ActionDropdown
+          align="left"
+          containerClassName="mt-6 w-full"
+          buttonClassName="flex w-full cursor-pointer items-center gap-2 rounded-md border border-slate-200 bg-white p-2 text-left text-slate-900 transition hover:border-slate-300"
+          label={
+            <>
+              <span className="grid h-7 w-7 shrink-0 place-items-center rounded-md bg-emerald-50 text-xs font-bold text-emerald-700">
+                {workspace.initial}
+              </span>
+              <span className="grid min-w-0 flex-1 gap-0.5">
+                <span className="text-xs font-bold text-slate-700">{workspace.name}</span>
+                <span className="text-[11px] text-slate-400">{workspace.plan}</span>
+              </span>
+              <span className="text-base leading-none text-slate-400" aria-hidden="true">
+                &#8964;
+              </span>
+            </>
+          }
         >
-          <span className="grid h-7 w-7 shrink-0 place-items-center rounded-md bg-emerald-50 text-xs font-bold text-emerald-700">
-            A
-          </span>
-          <span className="grid min-w-0 flex-1 gap-0.5">
-            <span className="text-xs font-bold text-slate-700">Acme Studio</span>
-            <span className="text-[11px] text-slate-400">Business plan</span>
-          </span>
-          <span className="text-base leading-none text-slate-400" aria-hidden="true">
-            &#8964;
-          </span>
-        </button>
+          {workspaces.map((item) => (
+            <button
+              className="block w-full rounded-md border-0 bg-transparent px-2 py-2 text-left text-xs font-bold text-slate-600 hover:bg-slate-100"
+              key={item.name}
+              type="button"
+              onClick={() => setWorkspace(item)}
+            >
+              <span className="block">{item.name}</span>
+              <span className="text-[10px] font-semibold text-slate-400">{item.plan}</span>
+            </button>
+          ))}
+        </ActionDropdown>
 
         <nav className="mt-7 grid gap-1" aria-label="Main navigation">
           <p className="m-0 px-2.5 pb-1.5 text-[10px] font-bold uppercase tracking-normal text-slate-400">
@@ -126,13 +152,40 @@ function Sidebar({ open = false, onClose }) {
             <p className="m-0 text-xs font-bold text-slate-700">Jordan Davis</p>
             <span className="text-[11px] text-slate-400">Workspace admin</span>
           </div>
-          <button
-            className="border-0 bg-transparent text-[15px] leading-none text-slate-400"
-            type="button"
-            aria-label="Open profile menu"
+          <ActionDropdown
+            align="right"
+            buttonClassName="border-0 bg-transparent px-1 py-0 text-[15px] leading-none text-slate-400 hover:border-0"
+            label="..."
           >
-            ...
-          </button>
+            <NavLink
+              className="block rounded-md px-2 py-2 text-xs font-bold text-slate-600 no-underline hover:bg-slate-100"
+              to="/settings"
+              onClick={onClose}
+            >
+              Settings
+            </NavLink>
+            <NavLink
+              className="block rounded-md px-2 py-2 text-xs font-bold text-slate-600 no-underline hover:bg-slate-100"
+              to="/auth/sign-in"
+              onClick={onClose}
+            >
+              Sign in
+            </NavLink>
+            <NavLink
+              className="block rounded-md px-2 py-2 text-xs font-bold text-slate-600 no-underline hover:bg-slate-100"
+              to="/auth/sign-up"
+              onClick={onClose}
+            >
+              Sign up
+            </NavLink>
+            <NavLink
+              className="block rounded-md px-2 py-2 text-xs font-bold text-red-600 no-underline hover:bg-red-50"
+              to="/auth/sign-in"
+              onClick={onClose}
+            >
+              Log out
+            </NavLink>
+          </ActionDropdown>
         </div>
       </aside>
     </>
