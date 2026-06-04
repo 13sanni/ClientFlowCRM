@@ -6,8 +6,8 @@ import helmet from 'helmet'
 import morgan from 'morgan'
 import rateLimit from 'express-rate-limit'
 import { env } from './config/env.js'
-import healthRoutes from './routes/health.routes.js'
 import { errorHandler, notFoundHandler } from './middleware/error.middleware.js'
+import healthRoutes from './routes/health.routes.js'
 
 const app = express()
 

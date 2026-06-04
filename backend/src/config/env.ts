@@ -16,4 +16,6 @@ const envSchema = z.object({
   MAIL_FROM: z.string().optional(),
 })
 
-export const env = envSchema.parse(process.env)
+export type Env = z.infer<typeof envSchema>
+
+export const env: Env = envSchema.parse(process.env)
