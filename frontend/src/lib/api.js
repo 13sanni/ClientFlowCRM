@@ -9,6 +9,17 @@ export class ApiError extends Error {
   }
 }
 
+let isRefreshing = false
+let failedQueue = []
+
+const processQueue = (error, token = null) => {
+  failedQueue.forEach((prom) => {
+    if (error) prom.reject(error)
+    else prom.resolve(token)
+  })
+  failedQueue = []
+}
+
 async function request(endpoint, options = {}) {
   const token = localStorage.getItem('auth_token')
 
@@ -24,18 +35,55 @@ async function request(endpoint, options = {}) {
   const config = {
     ...options,
     headers,
+    credentials: 'true' // Wait, standard fetch uses 'include' or 'same-origin'
   }
+  config.credentials = 'include' // Needed to send cookies for refresh token
 
   try {
     const response = await fetch(`${API_BASE}${endpoint}`, config)
-    const data = await response.json().catch(() => null)
+    let data = await response.json().catch(() => null)
 
     if (!response.ok) {
+      if (response.status === 401 && endpoint !== '/auth/sign-in' && endpoint !== '/auth/refresh') {
+        if (isRefreshing) {
+          return new Promise((resolve, reject) => {
+            failedQueue.push({ resolve, reject })
+          }).then(() => request(endpoint, options)).catch((err) => { throw err })
+        }
+
+        isRefreshing = true
+
+        try {
+          const refreshRes = await fetch(`${API_BASE}/auth/refresh`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include'
+          })
+
+          if (!refreshRes.ok) throw new Error('Refresh failed')
+
+          const refreshData = await refreshRes.json()
+          localStorage.setItem('auth_token', refreshData.accessToken)
+          
+          isRefreshing = false
+          processQueue(null, refreshData.accessToken)
+          
+          // Retry the original request
+          return request(endpoint, options)
+        } catch (refreshErr) {
+          isRefreshing = false
+          processQueue(refreshErr, null)
+          localStorage.removeItem('auth_token')
+          window.dispatchEvent(new Event('auth:unauthorized'))
+          throw new ApiError('Session expired', 401, null)
+        }
+      }
+
       if (response.status === 401) {
         localStorage.removeItem('auth_token')
         window.dispatchEvent(new Event('auth:unauthorized'))
       }
-      // BUG FIX: backend returns { message: ... } not { error: ... }
+
       throw new ApiError(data?.message || response.statusText, response.status, data)
     }
 

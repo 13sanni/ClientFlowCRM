@@ -14,7 +14,10 @@ import dealRoutes from './modules/deals/deal.routes.js'
 import invoiceRoutes from './modules/invoices/invoice.routes.js'
 import taskRoutes from './modules/tasks/task.routes.js'
 import analyticsRoutes from './modules/analytics/analytics.routes.js'
+import notificationsRoutes from './modules/notifications/notifications.routes.js'
+import filesRoutes from './modules/files/files.routes.js'
 import healthRoutes from './routes/health.routes.js'
+import path from 'path'
 
 const app = express()
 
@@ -39,6 +42,8 @@ app.use(
   }),
 )
 
+app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')))
+
 app.use('/api/activity', activityRoutes)
 app.use('/api/auth', authRoutes)
 app.use('/api/clients', clientRoutes)
@@ -46,6 +51,8 @@ app.use('/api/deals', dealRoutes)
 app.use('/api/invoices', invoiceRoutes)
 app.use('/api/tasks', taskRoutes)
 app.use('/api/analytics', analyticsRoutes)
+app.use('/api/notifications', notificationsRoutes)
+app.use('/api/files', filesRoutes)
 app.use('/api/health', healthRoutes)
 
 app.use(notFoundHandler)

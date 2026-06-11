@@ -1,13 +1,8 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Bell, ChevronDown, LogOut, Menu, Search, Settings } from 'lucide-react'
 import { useAuthStore } from '../../store/authStore'
-
-const notifications = [
-  { title: 'Invoice paid', detail: 'Northstar Labs paid INV-1048.' },
-  { title: 'Task assigned', detail: 'Maya assigned onboarding checklist.' },
-  { title: 'Deal moved', detail: 'Vertex Systems moved to negotiation.' },
-]
+import { api } from '../../lib/api'
 
 function getInitials(name) {
   if (!name) return '?'
@@ -23,10 +18,38 @@ function Topbar({ onOpenSidebar }) {
   const [isProfileOpen, setIsProfileOpen] = useState(false)
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false)
   const [isSearchOpen, setIsSearchOpen] = useState(false)
+  const [notifications, setNotifications] = useState([])
+  const [unreadCount, setUnreadCount] = useState(0)
 
   const user = useAuthStore((state) => state.user)
   const logout = useAuthStore((state) => state.logout)
   const navigate = useNavigate()
+
+  useEffect(() => {
+    async function loadNotifications() {
+      try {
+        const data = await api.get('/notifications')
+        setNotifications(data.notifications || [])
+        setUnreadCount(data.unreadCount || 0)
+      } catch (err) {
+        console.error('Failed to load notifications', err)
+      }
+    }
+    if (user) {
+      loadNotifications()
+    }
+  }, [user])
+
+  const handleMarkAllRead = async () => {
+    try {
+      await api.patch('/notifications/read-all')
+      setUnreadCount(0)
+      setNotifications(notifications.map(n => ({ ...n, isRead: true })))
+      setIsNotificationsOpen(false)
+    } catch (err) {
+      console.error('Failed to mark notifications read', err)
+    }
+  }
 
   const handleLogout = async () => {
     setIsProfileOpen(false)
@@ -94,7 +117,9 @@ function Topbar({ onOpenSidebar }) {
             onClick={() => setIsNotificationsOpen((open) => !open)}
           >
             <Bell size={17} strokeWidth={2} aria-hidden="true" />
-            <span className="absolute right-[7px] top-[7px] h-1.5 w-1.5 rounded-full border border-white bg-red-500" />
+            {unreadCount > 0 && (
+              <span className="absolute right-[7px] top-[7px] h-1.5 w-1.5 rounded-full border border-white bg-red-500" />
+            )}
           </button>
 
           {isNotificationsOpen && (
@@ -104,24 +129,35 @@ function Topbar({ onOpenSidebar }) {
                 <button
                   className="border-0 bg-transparent text-[11px] font-bold text-blue-700"
                   type="button"
-                  onClick={() => setIsNotificationsOpen(false)}
+                  onClick={handleMarkAllRead}
                 >
                   Mark all read
                 </button>
               </div>
-              <div className="mt-2 grid gap-1">
+                {notifications.length === 0 && (
+                  <p className="p-2 text-xs text-slate-500 text-center">No notifications</p>
+                )}
                 {notifications.map((notification) => (
                   <button
-                    className="rounded-md border-0 bg-transparent px-2 py-2 text-left hover:bg-slate-100"
-                    key={notification.title}
+                    className={`rounded-md border-0 bg-transparent px-2 py-2 text-left hover:bg-slate-100 ${notification.isRead ? 'opacity-70' : ''}`}
+                    key={notification.id}
                     type="button"
-                    onClick={() => setIsNotificationsOpen(false)}
+                    onClick={async () => {
+                      if (!notification.isRead) {
+                        try {
+                          await api.patch(`/notifications/${notification.id}/read`)
+                          setUnreadCount(prev => Math.max(0, prev - 1))
+                          setNotifications(notifications.map(n => n.id === notification.id ? { ...n, isRead: true } : n))
+                        } catch (err) {}
+                      }
+                      setIsNotificationsOpen(false)
+                    }}
                   >
                     <span className="block text-xs font-bold text-slate-700">
                       {notification.title}
                     </span>
                     <span className="text-[11px] font-semibold text-slate-400">
-                      {notification.detail}
+                      {notification.body || notification.detail}
                     </span>
                   </button>
                 ))}
