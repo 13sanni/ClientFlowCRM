@@ -13,6 +13,7 @@ import clientRoutes from './modules/clients/client.routes.js'
 import dealRoutes from './modules/deals/deal.routes.js'
 import invoiceRoutes from './modules/invoices/invoice.routes.js'
 import taskRoutes from './modules/tasks/task.routes.js'
+import analyticsRoutes from './modules/analytics/analytics.routes.js'
 import healthRoutes from './routes/health.routes.js'
 
 const app = express()
@@ -44,6 +45,7 @@ app.use('/api/clients', clientRoutes)
 app.use('/api/deals', dealRoutes)
 app.use('/api/invoices', invoiceRoutes)
 app.use('/api/tasks', taskRoutes)
+app.use('/api/analytics', analyticsRoutes)
 app.use('/api/health', healthRoutes)
 
 app.use(notFoundHandler)

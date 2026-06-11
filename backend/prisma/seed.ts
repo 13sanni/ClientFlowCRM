@@ -1,377 +1,237 @@
 import bcrypt from 'bcryptjs'
 import { PrismaClient } from '@prisma/client'
+import { faker } from '@faker-js/faker'
 
 const prisma = new PrismaClient()
 
-async function upsertUser(name: string, email: string) {
+async function main() {
+  console.log('Clearing database...')
+  await prisma.activityLog.deleteMany()
+  await prisma.notification.deleteMany()
+  await prisma.invoice.deleteMany()
+  await prisma.task.deleteMany()
+  await prisma.deal.deleteMany()
+  await prisma.lead.deleteMany()
+  await prisma.contact.deleteMany()
+  await prisma.client.deleteMany()
+  await prisma.pipelineStage.deleteMany()
+  await prisma.workspaceMember.deleteMany()
+  await prisma.workspace.deleteMany()
+  await prisma.user.deleteMany()
+  console.log('Database cleared.')
+
+  console.log('Generating mock data...')
+
   const passwordHash = await bcrypt.hash('Password@123', 10)
 
-  return prisma.user.upsert({
-    where: { email },
-    update: { name },
-    create: {
-      name,
-      email,
-      passwordHash,
-      isEmailVerified: true,
-    },
-  })
-}
+  // 1. Create Users
+  const userRoles = ['OWNER', 'ADMIN', 'MANAGER', 'SALES_REP', 'VIEWER'] as const
+  const usersToCreate = Array.from({ length: 15 }).map((_, i) => ({
+    name: faker.person.fullName(),
+    email: i === 0 ? 'admin@clientflow.io' : faker.internet.email(),
+    passwordHash,
+    avatarUrl: faker.image.avatar(),
+    isEmailVerified: true,
+  }))
 
-async function findOrCreateClient(data: {
-  name: string
-  segment: string
-  status: 'LEAD' | 'ACTIVE' | 'AT_RISK' | 'CHURNED'
-  value: string
-  workspaceId: string
-  ownerId: string
-}) {
-  const existingClient = await prisma.client.findFirst({
-    where: { name: data.name, workspaceId: data.workspaceId },
-  })
+  const users = await Promise.all(
+    usersToCreate.map((u) => prisma.user.create({ data: u }))
+  )
+  const adminUser = users[0]
 
-  if (existingClient) {
-    return prisma.client.update({
-      where: { id: existingClient.id },
-      data,
-    })
-  }
-
-  return prisma.client.create({ data })
-}
-
-async function main() {
-  const [jordan, maya, luis] = await Promise.all([
-    upsertUser('Jordan Davis', 'jordan@clientflow.io'),
-    upsertUser('Maya Patel', 'maya@clientflow.io'),
-    upsertUser('Luis Garcia', 'luis@clientflow.io'),
-  ])
-
-  const workspace = await prisma.workspace.upsert({
-    where: { slug: 'acme-studio' },
-    update: { name: 'Acme Studio' },
-    create: {
-      name: 'Acme Studio',
-      slug: 'acme-studio',
+  // 2. Create Workspace
+  const workspace = await prisma.workspace.create({
+    data: {
+      name: 'Acme Global',
+      slug: 'acme-global',
     },
   })
 
-  await Promise.all([
-    prisma.workspaceMember.upsert({
-      where: { userId_workspaceId: { userId: jordan.id, workspaceId: workspace.id } },
-      update: { role: 'OWNER' },
-      create: { userId: jordan.id, workspaceId: workspace.id, role: 'OWNER' },
-    }),
-    prisma.workspaceMember.upsert({
-      where: { userId_workspaceId: { userId: maya.id, workspaceId: workspace.id } },
-      update: { role: 'MANAGER' },
-      create: { userId: maya.id, workspaceId: workspace.id, role: 'MANAGER' },
-    }),
-    prisma.workspaceMember.upsert({
-      where: { userId_workspaceId: { userId: luis.id, workspaceId: workspace.id } },
-      update: { role: 'SALES_REP' },
-      create: { userId: luis.id, workspaceId: workspace.id, role: 'SALES_REP' },
-    }),
-  ])
-
-  const stages = await Promise.all(
-    [
-      { name: 'Qualified', position: 1, probability: 35 },
-      { name: 'Proposal', position: 2, probability: 55 },
-      { name: 'Negotiation', position: 3, probability: 75 },
-      { name: 'Closing', position: 4, probability: 90 },
-    ].map((stage) =>
-      prisma.pipelineStage.upsert({
-        where: { workspaceId_name: { workspaceId: workspace.id, name: stage.name } },
-        update: {
-          position: stage.position,
-          probability: stage.probability,
-        },
-        create: {
-          ...stage,
+  // 3. Create Workspace Members
+  await Promise.all(
+    users.map((user, i) =>
+      prisma.workspaceMember.create({
+        data: {
+          userId: user.id,
           workspaceId: workspace.id,
+          role: i === 0 ? 'OWNER' : faker.helpers.arrayElement(userRoles.slice(1)),
         },
-      }),
-    ),
+      })
+    )
   )
 
-  const stageByName = Object.fromEntries(stages.map((stage) => [stage.name, stage]))
+  // 4. Create Pipeline Stages
+  const stageDefinitions = [
+    { name: 'Lead', probability: 10 },
+    { name: 'Qualified', probability: 30 },
+    { name: 'Proposal', probability: 50 },
+    { name: 'Negotiation', probability: 75 },
+    { name: 'Closed Won', probability: 100 },
+    { name: 'Closed Lost', probability: 0 },
+  ]
+  const stages = await Promise.all(
+    stageDefinitions.map((s, i) =>
+      prisma.pipelineStage.create({
+        data: {
+          name: s.name,
+          position: i + 1,
+          probability: s.probability,
+          workspaceId: workspace.id,
+        },
+      })
+    )
+  )
 
-  const clients = await Promise.all([
-    findOrCreateClient({
-      name: 'Northstar Labs',
-      segment: 'Enterprise',
-      status: 'ACTIVE',
-      value: '18400',
-      workspaceId: workspace.id,
-      ownerId: maya.id,
-    }),
-    findOrCreateClient({
-      name: 'Clearline Media',
-      segment: 'Mid-market',
-      status: 'LEAD',
-      value: '12750',
-      workspaceId: workspace.id,
-      ownerId: jordan.id,
-    }),
-    findOrCreateClient({
-      name: 'BrightPath Co.',
-      segment: 'Startup',
-      status: 'LEAD',
-      value: '9860',
-      workspaceId: workspace.id,
-      ownerId: maya.id,
-    }),
-    findOrCreateClient({
-      name: 'Vertex Systems',
-      segment: 'Enterprise',
-      status: 'ACTIVE',
-      value: '22300',
-      workspaceId: workspace.id,
-      ownerId: jordan.id,
-    }),
-    findOrCreateClient({
-      name: 'Harbor & Pine',
-      segment: 'Small business',
-      status: 'AT_RISK',
-      value: '7240',
-      workspaceId: workspace.id,
-      ownerId: luis.id,
-    }),
-  ])
+  // 5. Create Clients
+  const clientStatuses = ['LEAD', 'ACTIVE', 'AT_RISK', 'CHURNED'] as const
+  const clientSegments = ['Enterprise', 'Mid-market', 'Small business', 'Startup']
+  const clients = await Promise.all(
+    Array.from({ length: 100 }).map(() =>
+      prisma.client.create({
+        data: {
+          name: faker.company.name(),
+          segment: faker.helpers.arrayElement(clientSegments),
+          status: faker.helpers.arrayElement(clientStatuses),
+          value: faker.number.int({ min: 1000, max: 100000 }).toString(),
+          website: faker.internet.url(),
+          notes: faker.lorem.paragraph(),
+          lastContact: faker.date.recent({ days: 30 }),
+          workspaceId: workspace.id,
+          ownerId: faker.helpers.arrayElement(users).id,
+        },
+      })
+    )
+  )
 
-  const clientByName = Object.fromEntries(clients.map((client) => [client.name, client]))
-
-  await Promise.all([
-    { client: 'Northstar Labs', name: 'Olivia Martin', email: 'olivia@northstarlabs.com' },
-    { client: 'Clearline Media', name: 'Ethan Brooks', email: 'ethan@clearlinemedia.com' },
-    { client: 'BrightPath Co.', name: 'Sophia Chen', email: 'sophia@brightpath.co' },
-    { client: 'Vertex Systems', name: 'Noah Williams', email: 'noah@vertexsystems.io' },
-    { client: 'Harbor & Pine', name: 'Ava Thompson', email: 'ava@harborandpine.com' },
-  ].map(async (contact) => {
-    const client = clientByName[contact.client]
-    const existingContact = await prisma.contact.findFirst({
-      where: { clientId: client.id, email: contact.email },
-    })
-
-    return existingContact
-      ? prisma.contact.update({ where: { id: existingContact.id }, data: contact })
-      : prisma.contact.create({
+  // 6. Create Contacts
+  const contacts = await Promise.all(
+    clients.flatMap((client) => {
+      const numContacts = faker.number.int({ min: 1, max: 4 })
+      return Array.from({ length: numContacts }).map((_, i) =>
+        prisma.contact.create({
           data: {
-            ...contact,
-            client: undefined,
+            name: faker.person.fullName(),
+            email: faker.internet.email(),
+            phone: faker.phone.number(),
+            title: faker.person.jobTitle(),
+            isPrimary: i === 0,
             clientId: client.id,
-            isPrimary: true,
           },
         })
-  }))
-
-  await Promise.all([
-    {
-      title: 'Website demo request',
-      source: 'Website demo',
-      status: 'QUALIFIED',
-      estimatedValue: '8400',
-      clientId: clientByName['Northstar Labs'].id,
-      ownerId: maya.id,
-    },
-    {
-      title: 'LinkedIn outreach reply',
-      source: 'LinkedIn outreach',
-      status: 'CONTACTED',
-      estimatedValue: '6200',
-      clientId: clientByName['BrightPath Co.'].id,
-      ownerId: maya.id,
-    },
-  ].map(async (lead) => {
-    const existingLead = await prisma.lead.findFirst({
-      where: { title: lead.title, workspaceId: workspace.id },
+      )
     })
+  )
 
-    return existingLead
-      ? prisma.lead.update({ where: { id: existingLead.id }, data: lead })
-      : prisma.lead.create({ data: { ...lead, workspaceId: workspace.id } })
-  }))
+  // 7. Create Deals
+  const dealStatuses = ['OPEN', 'WON', 'LOST'] as const
+  const deals = await Promise.all(
+    Array.from({ length: 250 }).map(() => {
+      const client = faker.helpers.arrayElement(clients)
+      const isWon = faker.datatype.boolean({ probability: 0.3 })
+      const isLost = faker.datatype.boolean({ probability: 0.2 })
+      const status = isWon ? 'WON' : isLost ? 'LOST' : 'OPEN'
+      
+      let stageId = stages[0].id
+      if (status === 'WON') stageId = stages[4].id
+      else if (status === 'LOST') stageId = stages[5].id
+      else stageId = faker.helpers.arrayElement(stages.slice(0, 4)).id
 
-  const deals = await Promise.all([
-    {
-      title: 'Northstar expansion',
-      value: '18400',
-      closeDate: new Date('2026-06-12'),
-      clientId: clientByName['Northstar Labs'].id,
-      stageId: stageByName.Qualified.id,
-      ownerId: maya.id,
-    },
-    {
-      title: 'Media buying suite',
-      value: '12750',
-      closeDate: new Date('2026-06-10'),
-      clientId: clientByName['Clearline Media'].id,
-      stageId: stageByName.Proposal.id,
-      ownerId: jordan.id,
-    },
-    {
-      title: 'Analytics rollout',
-      value: '8660',
-      closeDate: new Date('2026-06-22'),
-      clientId: clientByName['Vertex Systems'].id,
-      stageId: stageByName.Negotiation.id,
-      ownerId: jordan.id,
-    },
-  ].map(async (deal) => {
-    const existingDeal = await prisma.deal.findFirst({
-      where: { title: deal.title, workspaceId: workspace.id },
+      return prisma.deal.create({
+        data: {
+          title: `${client.name} - ${faker.commerce.productName()}`,
+          value: faker.number.int({ min: 5000, max: 250000 }).toString(),
+          status,
+          closeDate: status === 'OPEN' ? faker.date.future({ years: 0.5 }) : faker.date.recent({ days: 60 }),
+          workspaceId: workspace.id,
+          clientId: client.id,
+          stageId,
+          ownerId: faker.helpers.arrayElement(users).id,
+        },
+      })
     })
+  )
 
-    return existingDeal
-      ? prisma.deal.update({ where: { id: existingDeal.id }, data: deal })
-      : prisma.deal.create({ data: { ...deal, workspaceId: workspace.id } })
-  }))
-
-  const dealByTitle = Object.fromEntries(deals.map((deal) => [deal.title, deal]))
-
-  await Promise.all([
-    {
-      title: 'Send proposal revision',
-      status: 'IN_PROGRESS',
-      priority: 'HIGH',
-      dueDate: new Date('2026-06-04'),
-      clientId: clientByName['Clearline Media'].id,
-      dealId: dealByTitle['Media buying suite'].id,
-      assigneeId: jordan.id,
-      createdById: maya.id,
-    },
-    {
-      title: 'Prepare onboarding checklist',
-      status: 'TODO',
-      priority: 'MEDIUM',
-      dueDate: new Date('2026-06-05'),
-      clientId: clientByName['Northstar Labs'].id,
-      dealId: dealByTitle['Northstar expansion'].id,
-      assigneeId: maya.id,
-      createdById: jordan.id,
-    },
-    {
-      title: 'Follow up on unpaid invoice',
-      status: 'BLOCKED',
-      priority: 'HIGH',
-      dueDate: new Date('2026-05-31'),
-      clientId: clientByName['Harbor & Pine'].id,
-      assigneeId: luis.id,
-      createdById: jordan.id,
-    },
-  ].map(async (task) => {
-    const existingTask = await prisma.task.findFirst({
-      where: { title: task.title, workspaceId: workspace.id },
+  // 8. Create Tasks
+  const taskStatuses = ['TODO', 'IN_PROGRESS', 'IN_REVIEW', 'BLOCKED', 'DONE'] as const
+  const taskPriorities = ['LOW', 'MEDIUM', 'HIGH'] as const
+  const tasks = await Promise.all(
+    Array.from({ length: 400 }).map(() => {
+      const client = faker.datatype.boolean() ? faker.helpers.arrayElement(clients) : null
+      const deal = client && faker.datatype.boolean() ? faker.helpers.arrayElement(deals.filter(d => d.clientId === client.id)) : null
+      
+      return prisma.task.create({
+        data: {
+          title: faker.hacker.phrase(),
+          description: faker.lorem.sentences(2),
+          status: faker.helpers.arrayElement(taskStatuses),
+          priority: faker.helpers.arrayElement(taskPriorities),
+          dueDate: faker.date.soon({ days: 30 }),
+          completedAt: faker.datatype.boolean({ probability: 0.2 }) ? faker.date.recent() : null,
+          workspaceId: workspace.id,
+          clientId: client?.id,
+          dealId: deal?.id,
+          assigneeId: faker.helpers.arrayElement(users).id,
+          createdById: faker.helpers.arrayElement(users).id,
+        },
+      })
     })
+  )
 
-    return existingTask
-      ? prisma.task.update({ where: { id: existingTask.id }, data: task })
-      : prisma.task.create({ data: { ...task, workspaceId: workspace.id } })
-  }))
-
-  await Promise.all([
-    {
-      invoiceNo: 'INV-1048',
-      amount: '8400',
-      status: 'PAID',
-      issuedAt: new Date('2026-05-28'),
-      dueAt: new Date('2026-06-07'),
-      paidAt: new Date('2026-06-03'),
-      clientId: clientByName['Northstar Labs'].id,
-    },
-    {
-      invoiceNo: 'INV-1049',
-      amount: '6750',
-      status: 'SENT',
-      issuedAt: new Date('2026-05-30'),
-      dueAt: new Date('2026-06-12'),
-      clientId: clientByName['Clearline Media'].id,
-    },
-    {
-      invoiceNo: 'INV-1050',
-      amount: '4200',
-      status: 'OVERDUE',
-      issuedAt: new Date('2026-05-18'),
-      dueAt: new Date('2026-05-31'),
-      clientId: clientByName['Harbor & Pine'].id,
-    },
-  ].map((invoice) =>
-    prisma.invoice.upsert({
-      where: { workspaceId_invoiceNo: { workspaceId: workspace.id, invoiceNo: invoice.invoiceNo } },
-      update: invoice,
-      create: { ...invoice, workspaceId: workspace.id },
-    }),
-  ))
-
-  await Promise.all([
-    {
-      title: 'Invoice paid',
-      body: 'Northstar Labs paid INV-1048.',
-      type: 'INVOICE',
-      userId: jordan.id,
-    },
-    {
-      title: 'Task assigned',
-      body: 'Maya assigned onboarding checklist.',
-      type: 'TASK',
-      userId: maya.id,
-    },
-    {
-      title: 'Deal moved',
-      body: 'Vertex Systems moved to negotiation.',
-      type: 'DEAL',
-      userId: jordan.id,
-    },
-  ].map(async (notification) => {
-    const existingNotification = await prisma.notification.findFirst({
-      where: { title: notification.title, workspaceId: workspace.id, userId: notification.userId },
+  // 9. Create Invoices
+  const invoiceStatuses = ['DRAFT', 'SENT', 'PAID', 'OVERDUE', 'VOID'] as const
+  const invoices = await Promise.all(
+    Array.from({ length: 150 }).map(() => {
+      const status = faker.helpers.arrayElement(invoiceStatuses)
+      const issuedAt = faker.date.recent({ days: 90 })
+      const dueAt = new Date(issuedAt.getTime() + 30 * 24 * 60 * 60 * 1000)
+      
+      return prisma.invoice.create({
+        data: {
+          invoiceNo: `INV-${faker.number.int({ min: 10000, max: 99999 })}`,
+          amount: faker.number.int({ min: 1000, max: 50000 }).toString(),
+          status,
+          issuedAt,
+          dueAt,
+          paidAt: status === 'PAID' ? faker.date.between({ from: issuedAt, to: new Date() }) : null,
+          workspaceId: workspace.id,
+          clientId: faker.helpers.arrayElement(clients).id,
+        },
+      })
     })
+  )
 
-    return existingNotification
-      ? prisma.notification.update({ where: { id: existingNotification.id }, data: notification })
-      : prisma.notification.create({ data: { ...notification, workspaceId: workspace.id } })
-  }))
+  // 10. Create Activity Logs
+  const actions = ['DEAL_STAGE_CHANGED', 'INVOICE_PAID', 'CLIENT_CREATED', 'NOTE_ADDED', 'TASK_COMPLETED']
+  await Promise.all(
+    Array.from({ length: 500 }).map(() => {
+      const entity = faker.helpers.arrayElement([
+        { type: 'Deal', id: faker.helpers.arrayElement(deals).id },
+        { type: 'Client', id: faker.helpers.arrayElement(clients).id },
+        { type: 'Task', id: faker.helpers.arrayElement(tasks).id },
+        { type: 'Invoice', id: faker.helpers.arrayElement(invoices).id },
+      ])
 
-  await Promise.all([
-    {
-      action: 'DEAL_STAGE_CHANGED',
-      entityType: 'Deal',
-      entityId: dealByTitle['Analytics rollout'].id,
-      actorId: jordan.id,
-      dealId: dealByTitle['Analytics rollout'].id,
-      clientId: clientByName['Vertex Systems'].id,
-      metadata: { from: 'Proposal', to: 'Negotiation' },
-    },
-    {
-      action: 'INVOICE_PAID',
-      entityType: 'Invoice',
-      entityId: 'INV-1048',
-      actorId: jordan.id,
-      clientId: clientByName['Northstar Labs'].id,
-      metadata: { invoiceNo: 'INV-1048', amount: 8400 },
-    },
-  ].map(async (activity) => {
-    const existingActivity = await prisma.activityLog.findFirst({
-      where: {
-        workspaceId: workspace.id,
-        action: activity.action,
-        entityType: activity.entityType,
-        entityId: activity.entityId,
-      },
+      return prisma.activityLog.create({
+        data: {
+          action: faker.helpers.arrayElement(actions),
+          entityType: entity.type,
+          entityId: entity.id,
+          metadata: { details: faker.lorem.sentence() },
+          createdAt: faker.date.recent({ days: 30 }),
+          workspaceId: workspace.id,
+          actorId: faker.helpers.arrayElement(users).id,
+        },
+      })
     })
+  )
 
-    return existingActivity
-      ? prisma.activityLog.update({ where: { id: existingActivity.id }, data: activity })
-      : prisma.activityLog.create({ data: { ...activity, workspaceId: workspace.id } })
-  }))
-
-  console.log('Seed complete: demo CRM workspace is ready.')
+  console.log('Seed complete! Massive mock dataset generated.')
+  console.log(`Login Email: admin@clientflow.io | Password: Password@123`)
 }
 
 main()
-  .catch((error) => {
-    console.error(error)
+  .catch((e) => {
+    console.error(e)
     process.exit(1)
   })
   .finally(async () => {
