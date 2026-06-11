@@ -17,7 +17,7 @@ export const uploadFile: RequestHandler = async (req, res, next) => {
 
     const { clientId, dealId, invoiceId } = req.body
 
-    const fileUrl = `/uploads/${req.file.filename}`
+    const fileUrl = req.file.path // Cloudinary URL
 
     const attachment = await filesService.createFileAttachment({
       fileName: req.file.originalname,

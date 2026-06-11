@@ -3,7 +3,7 @@ import cookieParser from 'cookie-parser'
 import cors from 'cors'
 import express from 'express'
 import helmet from 'helmet'
-import morgan from 'morgan'
+import { httpLogger } from './utils/logger.js'
 import rateLimit from 'express-rate-limit'
 import { env } from './config/env.js'
 import { errorHandler, notFoundHandler } from './middleware/error.middleware.js'
@@ -32,7 +32,7 @@ app.use(compression())
 app.use(express.json({ limit: '1mb' }))
 app.use(express.urlencoded({ extended: true }))
 app.use(cookieParser())
-app.use(morgan(env.NODE_ENV === 'production' ? 'combined' : 'dev'))
+app.use(httpLogger)
 app.use(
   rateLimit({
     windowMs: 15 * 60 * 1000,

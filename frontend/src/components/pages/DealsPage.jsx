@@ -1,4 +1,8 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useMemo } from 'react'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { DndContext, PointerSensor, useSensor, useSensors } from '@dnd-kit/core'
+import { KanbanCard } from './KanbanCard'
+import { KanbanColumn } from './KanbanColumn'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -16,69 +20,95 @@ const createDealSchema = z.object({
 
 function DealsPage() {
   const [isNewDealOpen, setIsNewDealOpen] = useState(false)
-  const [deals, setDeals] = useState([])
-  const [pipelineStages, setPipelineStages] = useState([])
-  const [clients, setClients] = useState([])
-  const [isLoading, setIsLoading] = useState(true)
+  const queryClient = useQueryClient()
 
-  const {
-    register,
-    handleSubmit,
-    reset,
-    formState: { errors, isSubmitting },
-  } = useForm({
-    resolver: zodResolver(createDealSchema),
-    defaultValues: { title: '', value: 0, clientId: '', stageId: '' }
-  })
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 5,
+      },
+    })
+  )
 
-  async function loadData() {
-    try {
-      setIsLoading(true)
+  const { data, isLoading } = useQuery({
+    queryKey: ['dealsData'],
+    queryFn: async () => {
       const [stagesRes, dealsRes, clientsRes] = await Promise.all([
         api.get('/deals/stages'),
         api.get('/deals?page=1&pageSize=100'),
         api.get('/clients?page=1&pageSize=100')
       ])
-      setPipelineStages(stagesRes.stages || [])
-      setDeals(dealsRes.items || [])
-      setClients(clientsRes.items || [])
-    } catch (err) {
-      console.error('Failed to load deals data:', err)
-    } finally {
-      setIsLoading(false)
+      return {
+        pipelineStages: stagesRes.stages || [],
+        deals: dealsRes.items || [],
+        clients: clientsRes.items || []
+      }
     }
-  }
+  })
 
-  useEffect(() => {
-    loadData()
-  }, [])
+  const { pipelineStages = [], deals = [], clients = [] } = data || {}
 
-  const onAddDeal = async (data) => {
-    try {
-      await api.post('/deals', data)
+  const addDealMutation = useMutation({
+    mutationFn: (newDeal) => api.post('/deals', newDeal),
+    onSuccess: () => {
       setIsNewDealOpen(false)
       reset()
-      loadData()
-    } catch (err) {
+      queryClient.invalidateQueries({ queryKey: ['dealsData'] })
+    },
+    onError: (err) => {
       console.error('Failed to add deal:', err)
       alert(err.message || 'Failed to add deal')
     }
+  })
+
+  const moveDealMutation = useMutation({
+    mutationFn: ({ dealId, stageId }) => api.patch(`/deals/${dealId}/stage`, { stageId }),
+    onMutate: async ({ dealId, stageId }) => {
+      await queryClient.cancelQueries({ queryKey: ['dealsData'] })
+      const previousData = queryClient.getQueryData(['dealsData'])
+      
+      if (previousData) {
+        queryClient.setQueryData(['dealsData'], {
+          ...previousData,
+          deals: previousData.deals.map(d => d.id === dealId ? { ...d, stageId } : d)
+        })
+      }
+      return { previousData }
+    },
+    onError: (err, variables, context) => {
+      if (context?.previousData) {
+        queryClient.setQueryData(['dealsData'], context.previousData)
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['dealsData'] })
+    }
+  })
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm({
+    resolver: zodResolver(createDealSchema),
+    defaultValues: { title: '', value: 0, clientId: '', stageId: '' }
+  })
+
+  const onAddDeal = (data) => {
+    addDealMutation.mutate(data)
   }
 
-  const handleDrop = async (e, stageId) => {
-    e.preventDefault()
-    const dealId = e.dataTransfer.getData('dealId')
-    if (!dealId) return
-    
-    // Optimistic update
-    setDeals(prev => prev.map(d => d.id === dealId ? { ...d, stageId } : d))
-    
-    try {
-      // BUG FIX: was api.put — backend route is PATCH /deals/:id/stage
-      await api.patch(`/deals/${dealId}/stage`, { stageId })
-    } catch (err) {
-      console.error('Failed to move deal:', err)
-      loadData() // Revert on failure
+  const handleDragEnd = (event) => {
+    const { active, over } = event;
+    if (over && over.id) {
+      const dealId = active.id;
+      const stageId = over.id;
+      
+      const deal = deals.find(d => d.id === dealId)
+      if (deal && deal.stageId !== stageId) {
+        moveDealMutation.mutate({ dealId, stageId })
+      }
     }
   }
 
@@ -143,62 +173,26 @@ function DealsPage() {
         ))}
       </section>
 
-      <section
-        className="mt-4 grid grid-cols-4 gap-3.5 overflow-x-auto pb-1 max-[520px]:grid-cols-1 max-[520px]:overflow-x-visible"
-        aria-label="Deal pipeline board"
-      >
-        {isLoading ? (
-          Array.from({ length: 4 }).map((_, i) => (
-            <article className="min-h-[420px] min-w-60 rounded-lg border border-slate-200 bg-slate-50 animate-pulse" key={i}>
-              <div className="border-b border-slate-200 p-4"><div className="h-4 w-20 bg-slate-200 rounded"></div></div>
-            </article>
-          ))
-        ) : stages.map((stage) => (
-          <article
-            className="min-h-[420px] min-w-60 rounded-lg border border-slate-200 bg-slate-50 max-[520px]:min-h-0 transition-colors hover:bg-slate-100/50"
-            key={stage.name}
-            onDragOver={(e) => e.preventDefault()}
-            onDrop={(e) => handleDrop(e, stage.id)}
-          >
-            <div className="flex items-start justify-between gap-3 border-b border-slate-200 p-4">
-              <div>
-                <h2 className="m-0 text-sm font-bold text-slate-700">{stage.name}</h2>
-                <span className="mt-1 block text-[10px] font-bold text-slate-400">
-                  {stage.deals.length} deals
-                </span>
-              </div>
-              <strong className="text-xs text-slate-600">{stage.value}</strong>
-            </div>
-
-            <div className="grid gap-2.5 p-3">
+      <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
+        <section
+          className="mt-4 grid grid-cols-4 gap-3.5 overflow-x-auto pb-1 max-[520px]:grid-cols-1 max-[520px]:overflow-x-visible"
+          aria-label="Deal pipeline board"
+        >
+          {isLoading ? (
+            Array.from({ length: 4 }).map((_, i) => (
+              <article className="min-h-[420px] min-w-60 rounded-lg border border-slate-200 bg-slate-50 animate-pulse" key={i}>
+                <div className="border-b border-slate-200 p-4"><div className="h-4 w-20 bg-slate-200 rounded"></div></div>
+              </article>
+            ))
+          ) : stages.map((stage) => (
+            <KanbanColumn key={stage.id} stage={stage}>
               {stage.deals.map((deal) => (
-                <motion.article 
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="rounded-lg border border-slate-200 bg-white p-3 shadow-sm cursor-grab active:cursor-grabbing" 
-                  key={deal.id}
-                  draggable
-                  onDragStart={(e) => e.dataTransfer.setData('dealId', deal.id)}
-                >
-                  <div className="flex items-start justify-between gap-2.5">
-                    <h3 className="m-0 text-[13px] font-bold leading-snug text-slate-700">
-                      {deal.title}
-                    </h3>
-                    <span className="whitespace-nowrap text-xs font-bold text-blue-700">
-                      ${(deal.value / 1000).toFixed(1)}k
-                    </span>
-                  </div>
-                  <p className="mt-2 text-[11px] font-bold text-slate-500">{deal.client?.name}</p>
-                  <div className="mt-4 flex items-center justify-between gap-2.5 text-[10px] font-bold text-slate-400">
-                    <span>{deal.owner?.name}</span>
-                    <time className="whitespace-nowrap">Close {deal.closeDate ? new Date(deal.closeDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : 'TBD'}</time>
-                  </div>
-                </motion.article>
+                <KanbanCard key={deal.id} deal={deal} />
               ))}
-            </div>
-          </article>
-        ))}
-      </section>
+            </KanbanColumn>
+          ))}
+        </section>
+      </DndContext>
 
       {isNewDealOpen && (
         <ActionModal
@@ -207,7 +201,7 @@ function DealsPage() {
           primaryLabel="Create deal"
           onClose={() => setIsNewDealOpen(false)}
           onSubmit={handleSubmit(onAddDeal)}
-          isSubmitting={isSubmitting}
+          isSubmitting={addDealMutation.isPending}
         >
           <label className="grid gap-1.5">
             <span className="text-[11px] font-bold text-slate-500">Deal title</span>

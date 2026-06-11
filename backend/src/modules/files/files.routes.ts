@@ -1,24 +1,25 @@
 import { Router } from 'express'
 import multer from 'multer'
+import { v2 as cloudinary } from 'cloudinary'
+import { CloudinaryStorage } from 'multer-storage-cloudinary'
 import { requireAuth } from '../../middleware/auth.middleware.js'
 import * as filesController from './files.controller.js'
-import path from 'path'
-import crypto from 'crypto'
-import fs from 'fs'
+import { env } from '../../config/env.js'
 
-const uploadDir = path.join(process.cwd(), 'uploads')
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true })
-}
+cloudinary.config({
+  cloud_name: env.CLOUDINARY_CLOUD_NAME,
+  api_key: env.CLOUDINARY_API_KEY,
+  api_secret: env.CLOUDINARY_API_SECRET,
+})
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, uploadDir)
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: async (req, file) => {
+    return {
+      folder: 'clientflow_crm',
+      resource_type: 'auto',
+    }
   },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = crypto.randomBytes(16).toString('hex')
-    cb(null, uniqueSuffix + path.extname(file.originalname))
-  }
 })
 
 const upload = multer({ storage })

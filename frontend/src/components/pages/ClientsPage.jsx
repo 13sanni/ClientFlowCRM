@@ -1,4 +1,5 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useMemo } from 'react'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -34,50 +35,43 @@ function ClientsPage() {
   const [segmentFilter, setSegmentFilter] = useState('All segments')
   const [statusFilter, setStatusFilter] = useState('Status')
   
-  const [clients, setClients] = useState([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState(null)
-  
+  const queryClient = useQueryClient()
+
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['clients'],
+    queryFn: () => api.get('/clients?page=1&pageSize=50'),
+  })
+  const clients = data?.items || []
+
+  const addClientMutation = useMutation({
+    mutationFn: (newClient) => api.post('/clients', newClient),
+    onSuccess: () => {
+      setIsAddClientOpen(false)
+      reset()
+      queryClient.invalidateQueries({ queryKey: ['clients'] })
+    },
+    onError: (err) => {
+      console.error('Failed to add client:', err)
+      alert(err.message || 'Failed to add client')
+    }
+  })
+
   const {
     register,
     handleSubmit,
     reset,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm({
     resolver: zodResolver(createClientSchema),
     defaultValues: { name: '', segment: 'STARTUP', contactEmail: '' }
   })
 
-  async function loadClients() {
-    try {
-      setIsLoading(true)
-      const response = await api.get('/clients?page=1&pageSize=50')
-      setClients(response.items || [])
-    } catch (err) {
-      setError(err.message)
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  useEffect(() => {
-    loadClients()
-  }, [])
-
-  const onAddClient = async (data) => {
-    try {
-      await api.post('/clients', {
-        name: data.name,
-        segment: data.segment,
-        primaryContact: data.contactEmail ? { name: 'Primary Contact', email: data.contactEmail } : undefined
-      })
-      setIsAddClientOpen(false)
-      reset()
-      loadClients()
-    } catch (err) {
-      console.error('Failed to add client:', err)
-      alert(err.message || 'Failed to add client')
-    }
+  const onAddClient = (data) => {
+    addClientMutation.mutate({
+      name: data.name,
+      segment: data.segment,
+      primaryContact: data.contactEmail ? { name: 'Primary Contact', email: data.contactEmail } : undefined
+    })
   }
 
   const filteredClients = useMemo(() => {
@@ -267,7 +261,7 @@ function ClientsPage() {
           primaryLabel="Add client"
           onClose={() => setIsAddClientOpen(false)}
           onSubmit={handleSubmit(onAddClient)}
-          isSubmitting={isSubmitting}
+          isSubmitting={addClientMutation.isPending}
         >
           <label className="grid gap-1.5">
             <span className="text-[11px] font-bold text-slate-500">Company name</span>
