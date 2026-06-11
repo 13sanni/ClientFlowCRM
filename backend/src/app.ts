@@ -7,6 +7,7 @@ import morgan from 'morgan'
 import rateLimit from 'express-rate-limit'
 import { env } from './config/env.js'
 import { errorHandler, notFoundHandler } from './middleware/error.middleware.js'
+import activityRoutes from './modules/activity/activity.routes.js'
 import authRoutes from './modules/auth/auth.routes.js'
 import clientRoutes from './modules/clients/client.routes.js'
 import dealRoutes from './modules/deals/deal.routes.js'
@@ -37,6 +38,7 @@ app.use(
   }),
 )
 
+app.use('/api/activity', activityRoutes)
 app.use('/api/auth', authRoutes)
 app.use('/api/clients', clientRoutes)
 app.use('/api/deals', dealRoutes)
