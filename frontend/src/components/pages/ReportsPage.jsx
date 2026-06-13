@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Cell } from 'recharts'
 import ActionDropdown from '../common/ActionDropdown'
 import ActionModal from '../common/ActionModal'
 import { cn } from '../../lib/utils'
@@ -29,6 +30,13 @@ function ReportsPage() {
     }
     fetchReports()
   }, [rangeFilter])
+
+  const chartColors = {
+    'bg-blue-600': '#2563eb',
+    'bg-emerald-600': '#059669',
+    'bg-amber-500': '#f59e0b',
+    'bg-violet-500': '#8b5cf6'
+  }
 
   return (
     <main className="px-10 py-9 max-[520px]:px-6 max-[520px]:py-7">
@@ -72,38 +80,36 @@ function ReportsPage() {
       </section>
 
       <section className="mt-4 grid grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] gap-4 max-[1100px]:grid-cols-1">
-        <article className="rounded-lg border border-slate-200 bg-white p-5">
+        <article className="rounded-lg border border-slate-200 bg-white p-5 flex flex-col">
           <p className="m-0 text-[10px] font-bold uppercase tracking-normal text-slate-400">
             Conversion funnel
           </p>
           <h2 className="mt-1 text-base font-bold text-slate-700">Lead performance</h2>
 
-          <div className="mt-6 grid gap-4">
+          <div className="mt-6 flex-1 min-h-[200px]">
             {isLoading && data.funnelStages.length === 0 ? (
-               Array.from({ length: 4 }).map((_, i) => (
-                 <div key={i} className="animate-pulse">
-                   <div className="flex justify-between mb-2">
-                     <div className="h-3 w-20 bg-slate-200 rounded"></div>
-                     <div className="h-3 w-6 bg-slate-200 rounded"></div>
-                   </div>
-                   <div className="h-2 bg-slate-100 rounded-full"></div>
-                 </div>
-               ))
+               <div className="flex h-full w-full items-center justify-center">
+                 <div className="h-6 w-6 animate-spin rounded-full border-2 border-slate-200 border-t-blue-600"></div>
+               </div>
             ) : (
-              data.funnelStages.map((stage) => (
-                <div key={stage.label}>
-                  <div className="flex items-center justify-between gap-3">
-                    <p className="m-0 text-xs font-bold text-slate-600">{stage.label}</p>
-                    <span className="text-xs font-bold text-slate-700">{stage.value}</span>
-                  </div>
-                  <div className="mt-2 h-2 overflow-hidden rounded-full bg-slate-100">
-                    <span
-                      className={cn('block h-full rounded-full', stage.tone)}
-                      style={{ width: `${stage.percentage}%` }}
-                    />
-                  </div>
-                </div>
-              ))
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={data.funnelStages} layout="vertical" margin={{ top: 0, right: 30, left: 30, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f5f9" />
+                  <XAxis type="number" hide />
+                  <YAxis dataKey="label" type="category" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#64748b', fontWeight: 'bold' }} />
+                  <Tooltip 
+                    cursor={{fill: '#f8fafc'}}
+                    contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
+                    itemStyle={{ color: '#0F172A', fontWeight: 'bold' }}
+                    formatter={(value, name, props) => [value, 'Count']}
+                  />
+                  <Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={24}>
+                    {data.funnelStages.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={chartColors[entry.tone] || '#94a3b8'} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
             )}
           </div>
         </article>

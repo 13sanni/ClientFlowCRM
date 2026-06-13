@@ -15,6 +15,7 @@ import invoiceRoutes from './modules/invoices/invoice.routes.js'
 import taskRoutes from './modules/tasks/task.routes.js'
 import analyticsRoutes from './modules/analytics/analytics.routes.js'
 import notificationsRoutes from './modules/notifications/notifications.routes.js'
+import searchRoutes from './modules/search/search.routes.js'
 import filesRoutes from './modules/files/files.routes.js'
 import healthRoutes from './routes/health.routes.js'
 import path from 'path'
@@ -52,6 +53,7 @@ app.use('/api/invoices', invoiceRoutes)
 app.use('/api/tasks', taskRoutes)
 app.use('/api/analytics', analyticsRoutes)
 app.use('/api/notifications', notificationsRoutes)
+app.use('/api/search', searchRoutes)
 app.use('/api/files', filesRoutes)
 app.use('/api/health', healthRoutes)
 

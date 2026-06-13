@@ -18,12 +18,35 @@ function Topbar({ onOpenSidebar }) {
   const [isProfileOpen, setIsProfileOpen] = useState(false)
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false)
   const [isSearchOpen, setIsSearchOpen] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [searchResults, setSearchResults] = useState({ clients: [], deals: [], tasks: [], invoices: [] })
+  const [isSearching, setIsSearching] = useState(false)
   const [notifications, setNotifications] = useState([])
   const [unreadCount, setUnreadCount] = useState(0)
 
   const user = useAuthStore((state) => state.user)
   const logout = useAuthStore((state) => state.logout)
   const navigate = useNavigate()
+
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(async () => {
+      if (searchQuery.trim() === '') {
+        setSearchResults({ clients: [], deals: [], tasks: [], invoices: [] })
+        return
+      }
+      setIsSearching(true)
+      try {
+        const data = await api.get(`/search?q=${encodeURIComponent(searchQuery)}`)
+        setSearchResults(data)
+      } catch (err) {
+        console.error('Failed to perform search', err)
+      } finally {
+        setIsSearching(false)
+      }
+    }, 300)
+
+    return () => clearTimeout(delayDebounceFn)
+  }, [searchQuery])
 
   useEffect(() => {
     async function loadNotifications() {
@@ -81,12 +104,14 @@ function Topbar({ onOpenSidebar }) {
             className="w-full border-0 bg-transparent py-2.5 text-xs text-slate-700 outline-none placeholder:text-slate-400"
             type="search"
             placeholder="Search clients, deals, or tasks"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
             onFocus={() => setIsSearchOpen(true)}
           />
         </label>
 
         {isSearchOpen && (
-          <div className="absolute left-0 top-11 z-30 w-full rounded-lg border border-slate-200 bg-white p-2 shadow-lg">
+          <div className="absolute left-0 top-11 z-30 w-full rounded-lg border border-slate-200 bg-white p-2 shadow-lg max-h-96 overflow-y-auto">
             <div className="flex items-center justify-between px-2 py-2">
               <p className="m-0 text-[10px] font-bold uppercase tracking-normal text-slate-400">
                 Quick search
@@ -99,9 +124,60 @@ function Topbar({ onOpenSidebar }) {
                 Close
               </button>
             </div>
-            <p className="px-2 py-3 text-xs font-semibold text-slate-400">
-              Start typing to search across clients, deals, and tasks.
-            </p>
+            
+            {searchQuery.trim() === '' ? (
+              <p className="px-2 py-3 text-xs font-semibold text-slate-400">
+                Start typing to search across clients, deals, and tasks.
+              </p>
+            ) : isSearching ? (
+              <p className="px-2 py-3 text-xs font-semibold text-slate-400">Searching...</p>
+            ) : (
+              <div className="flex flex-col gap-2 px-2 pb-2">
+                {searchResults?.clients?.length > 0 && (
+                  <div>
+                    <h3 className="text-[10px] font-bold text-slate-500 uppercase mt-2 mb-1">Clients</h3>
+                    {searchResults.clients.map(c => (
+                      <Link key={`client-${c.id}`} to={`/clients`} onClick={() => setIsSearchOpen(false)} className="block text-xs font-semibold text-slate-700 hover:bg-slate-50 p-1 rounded no-underline">
+                        {c.name} <span className="text-[10px] text-slate-400">({c.status})</span>
+                      </Link>
+                    ))}
+                  </div>
+                )}
+                {searchResults?.deals?.length > 0 && (
+                  <div>
+                    <h3 className="text-[10px] font-bold text-slate-500 uppercase mt-2 mb-1">Deals</h3>
+                    {searchResults.deals.map(d => (
+                      <Link key={`deal-${d.id}`} to={`/deals`} onClick={() => setIsSearchOpen(false)} className="block text-xs font-semibold text-slate-700 hover:bg-slate-50 p-1 rounded no-underline">
+                        {d.title} <span className="text-[10px] text-slate-400">({d.status})</span>
+                      </Link>
+                    ))}
+                  </div>
+                )}
+                {searchResults?.tasks?.length > 0 && (
+                  <div>
+                    <h3 className="text-[10px] font-bold text-slate-500 uppercase mt-2 mb-1">Tasks</h3>
+                    {searchResults.tasks.map(t => (
+                      <Link key={`task-${t.id}`} to={`/tasks`} onClick={() => setIsSearchOpen(false)} className="block text-xs font-semibold text-slate-700 hover:bg-slate-50 p-1 rounded no-underline">
+                        {t.title} <span className="text-[10px] text-slate-400">({t.status})</span>
+                      </Link>
+                    ))}
+                  </div>
+                )}
+                {searchResults?.invoices?.length > 0 && (
+                  <div>
+                    <h3 className="text-[10px] font-bold text-slate-500 uppercase mt-2 mb-1">Invoices</h3>
+                    {searchResults.invoices.map(i => (
+                      <Link key={`inv-${i.id}`} to={`/invoices`} onClick={() => setIsSearchOpen(false)} className="block text-xs font-semibold text-slate-700 hover:bg-slate-50 p-1 rounded no-underline">
+                        {i.invoiceNo} <span className="text-[10px] text-slate-400">({i.status})</span>
+                      </Link>
+                    ))}
+                  </div>
+                )}
+                {!searchResults?.clients?.length && !searchResults?.deals?.length && !searchResults?.tasks?.length && !searchResults?.invoices?.length && (
+                  <p className="py-2 text-xs text-slate-500">No results found.</p>
+                )}
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -161,7 +237,6 @@ function Topbar({ onOpenSidebar }) {
                     </span>
                   </button>
                 ))}
-              </div>
             </div>
           )}
         </div>
