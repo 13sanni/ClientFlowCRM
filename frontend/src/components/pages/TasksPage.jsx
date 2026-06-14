@@ -12,6 +12,7 @@ import { format, isPast, isToday, isTomorrow, parseISO } from 'date-fns'
 const createTaskSchema = z.object({
   title: z.string().trim().min(2, 'Title required'),
   priority: z.enum(['LOW', 'MEDIUM', 'HIGH']).default('MEDIUM'),
+  clientId: z.string().optional().or(z.literal('')),
 })
 
 const priorityStyles = {
@@ -43,6 +44,7 @@ function TasksPage() {
   const [priorityFilter, setPriorityFilter] = useState('Priority')
 
   const [tasks, setTasks] = useState([])
+  const [clients, setClients] = useState([])
   const [isLoading, setIsLoading] = useState(true)
 
   const {
@@ -55,28 +57,35 @@ function TasksPage() {
     defaultValues: { title: '', priority: 'MEDIUM' }
   })
 
-  async function loadTasks() {
+  async function loadData() {
     try {
       setIsLoading(true)
-      const res = await api.get('/tasks?page=1&pageSize=100')
-      setTasks(res.items || [])
+      const [tasksRes, clientsRes] = await Promise.all([
+        api.get('/tasks?page=1&pageSize=1000'),
+        api.get('/clients?page=1&pageSize=1000')
+      ])
+      setTasks(tasksRes.items || [])
+      setClients(clientsRes.items || [])
     } catch (err) {
-      console.error('Failed to load tasks', err)
+      console.error('Failed to load data', err)
     } finally {
       setIsLoading(false)
     }
   }
 
   useEffect(() => {
-    loadTasks()
+    loadData()
   }, [])
 
   const onAddTask = async (data) => {
     try {
-      await api.post('/tasks', data)
+      const payload = { ...data }
+      if (!payload.clientId) delete payload.clientId
+
+      await api.post('/tasks', payload)
       setIsNewTaskOpen(false)
       reset()
-      loadTasks()
+      loadData()
     } catch (err) {
       console.error('Failed to add task:', err)
       alert(err.message || 'Failed to add task')
@@ -88,10 +97,10 @@ function TasksPage() {
     // Optimistic update
     setTasks(prev => prev.map(t => t.id === task.id ? { ...t, status: newStatus } : t))
     try {
-      await api.put(`/tasks/${task.id}/status`, { status: newStatus })
+      await api.patch(`/tasks/${task.id}/status`, { status: newStatus })
     } catch (err) {
       console.error('Failed to update task status:', err)
-      loadTasks() // Revert on failure
+      loadData() // Revert on failure
     }
   }
 
@@ -328,6 +337,16 @@ function TasksPage() {
                 <option value="HIGH">High</option>
                 <option value="MEDIUM">Medium</option>
                 <option value="LOW">Low</option>
+              </select>
+            </label>
+            <label className="grid gap-1.5">
+              <span className="text-[11px] font-bold text-slate-500">Client</span>
+              <select
+                className={cn("rounded-md border px-3 py-2 text-sm outline-none focus:border-blue-300", errors.clientId ? "border-red-300" : "border-slate-200")}
+                {...register('clientId')}
+              >
+                <option value="">No Client</option>
+                {clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
             </label>
           </div>

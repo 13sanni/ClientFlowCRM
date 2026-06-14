@@ -118,7 +118,7 @@ function DealsPage() {
 
     const grouped = pipelineStages.map(stage => {
       const stageDeals = deals.filter(d => d.stageId === stage.id)
-      const stageValue = stageDeals.reduce((sum, d) => sum + (d.value || 0), 0)
+      const stageValue = stageDeals.reduce((sum, d) => sum + (Number(d.value) || 0), 0)
       
       totalValue += stageValue
       if (stage.name !== 'Closed Won' && stage.name !== 'Closed Lost') {

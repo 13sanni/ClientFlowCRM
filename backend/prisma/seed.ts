@@ -157,7 +157,8 @@ async function main() {
   const tasks = await Promise.all(
     Array.from({ length: 400 }).map(() => {
       const client = faker.datatype.boolean() ? faker.helpers.arrayElement(clients) : null
-      const deal = client && faker.datatype.boolean() ? faker.helpers.arrayElement(deals.filter(d => d.clientId === client.id)) : null
+      const clientDeals = client ? deals.filter(d => d.clientId === client.id) : []
+      const deal = client && faker.datatype.boolean() && clientDeals.length > 0 ? faker.helpers.arrayElement(clientDeals) : null
       
       return prisma.task.create({
         data: {

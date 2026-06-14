@@ -107,11 +107,11 @@ function DashboardPage() {
         const [clientsRes, dealsRes, tasksRes] = await Promise.all([
           api.get('/clients?page=1&pageSize=1'),
           api.get('/deals?page=1&pageSize=1000'),
-          api.get('/tasks?page=1&pageSize=1000&status=TODO,IN_PROGRESS,IN_REVIEW')
+          api.get('/tasks?page=1&pageSize=1000')
         ])
 
         const totalClients = clientsRes.pagination?.total || 0
-        const totalPipelineValue = dealsRes.items?.reduce((sum, d) => sum + (d.value || 0), 0) || 0
+        const totalPipelineValue = dealsRes.items?.reduce((sum, d) => sum + (Number(d.value) || 0), 0) || 0
         const totalTasks = tasksRes.pagination?.total || 0
 
         // Simple win rate from deals

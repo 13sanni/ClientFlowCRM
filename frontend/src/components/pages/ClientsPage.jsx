@@ -82,6 +82,12 @@ function ClientsPage() {
     })
   }, [clients, segmentFilter, statusFilter])
 
+  const clientSummary = useMemo(() => [
+    { label: 'Total clients', value: clients.length },
+    { label: 'Active clients', value: clients.filter(c => c.status === 'ACTIVE').length },
+    { label: 'Total value', value: `$${(clients.reduce((sum, c) => sum + (Number(c.value) || 0), 0) / 1000).toFixed(1)}k` },
+  ], [clients])
+
   return (
     <motion.main 
       initial={{ opacity: 0, y: 10 }}
@@ -200,7 +206,7 @@ function ClientsPage() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.2 }}
-                    key={client.company}
+                    key={client.id}
                   >
                     <td className="whitespace-nowrap border-t border-slate-100 px-5 py-3 text-xs font-bold text-slate-700">
                       {client.name}
@@ -212,7 +218,7 @@ function ClientsPage() {
                       {client.owner?.name || 'Unassigned'}
                     </td>
                     <td className="whitespace-nowrap border-t border-slate-100 px-5 py-3 text-xs font-bold text-slate-700">
-                      ${client.value?.toLocaleString() || 0}
+                      ${Number(client.value || 0).toLocaleString()}
                     </td>
                     <td className="whitespace-nowrap border-t border-slate-100 px-5 py-3 text-xs font-semibold text-slate-500">
                       <span className={cn('inline-flex rounded-full px-2 py-1 text-[10px] font-bold', statusTone[client.status] || 'bg-slate-100 text-slate-600')}>

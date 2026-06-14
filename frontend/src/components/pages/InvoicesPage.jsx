@@ -91,11 +91,11 @@ function InvoicesPage() {
       // Summary calculations
       if (inv.status === 'PAID') {
         paidCount++
-        totalBilled += (inv.amount || 0)
+        totalBilled += (Number(inv.amount) || 0)
       } else if (inv.status === 'OVERDUE') {
-        overdueAmount += (inv.amount || 0)
+        overdueAmount += (Number(inv.amount) || 0)
       } else if (inv.status === 'PENDING') {
-        totalBilled += (inv.amount || 0)
+        totalBilled += (Number(inv.amount) || 0)
       }
 
       const matchStatus = statusFilter === 'All statuses' || inv.status === statusFilter.toUpperCase()
@@ -236,7 +236,7 @@ function InvoicesPage() {
                       {formatDate(invoice.dueAt)}
                     </td>
                     <td className="whitespace-nowrap border-t border-slate-100 px-5 py-3 text-xs font-bold text-slate-700">
-                      ${invoice.amount?.toLocaleString() || 0}
+                      ${Number(invoice.amount || 0).toLocaleString()}
                     </td>
                     <td className="whitespace-nowrap border-t border-slate-100 px-5 py-3 text-xs font-semibold text-slate-500">
                       <span className={cn('inline-flex rounded-full px-2 py-1 text-[10px] font-bold', statusStyles[invoice.status] || 'bg-slate-100 text-slate-600')}>
