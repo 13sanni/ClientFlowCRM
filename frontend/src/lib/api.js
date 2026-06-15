@@ -36,6 +36,7 @@ async function request(endpoint, options = {}) {
     ...options,
     headers,
     credentials: 'include', // Send cookies for refresh token
+  }
 
   try {
     const response = await fetch(`${API_BASE}${endpoint}`, config)
