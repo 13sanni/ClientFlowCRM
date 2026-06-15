@@ -35,9 +35,7 @@ async function request(endpoint, options = {}) {
   const config = {
     ...options,
     headers,
-    credentials: 'true' // Wait, standard fetch uses 'include' or 'same-origin'
-  }
-  config.credentials = 'include' // Needed to send cookies for refresh token
+    credentials: 'include', // Send cookies for refresh token
 
   try {
     const response = await fetch(`${API_BASE}${endpoint}`, config)

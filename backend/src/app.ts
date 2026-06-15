@@ -37,13 +37,13 @@ app.use(httpLogger)
 app.use(
   rateLimit({
     windowMs: 15 * 60 * 1000,
-    limit: 100,
+    limit: 300,
     standardHeaders: true,
     legacyHeaders: false,
   }),
 )
 
-app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')))
+// Static /uploads serving removed — files are served via Cloudinary
 
 app.use('/api/activity', activityRoutes)
 app.use('/api/auth', authRoutes)

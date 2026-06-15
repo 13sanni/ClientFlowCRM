@@ -2,6 +2,7 @@ import { Router } from 'express'
 import multer from 'multer'
 import { v2 as cloudinary } from 'cloudinary'
 import { requireAuth } from '../../middleware/auth.middleware.js'
+import { requireWorkspaceSalesRep } from '../../middleware/rbac.middleware.js'
 import { env } from '../../config/env.js'
 
 cloudinary.config({
@@ -10,13 +11,25 @@ cloudinary.config({
   api_secret: env.CLOUDINARY_API_SECRET,
 })
 
-const upload = multer({ storage: multer.memoryStorage() })
+const ALLOWED_MIME_TYPES = /^(image\/(jpeg|png|gif|webp|svg\+xml)|application\/pdf|text\/)/
+
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10 MB max
+  fileFilter: (_req, file, cb) => {
+    if (ALLOWED_MIME_TYPES.test(file.mimetype)) {
+      cb(null, true)
+    } else {
+      cb(new Error('File type not allowed. Allowed: images, PDFs, text files.'))
+    }
+  },
+})
 
 const router = Router()
 
 router.use(requireAuth)
 
-router.post('/upload', upload.single('file'), async (req, res) => {
+router.post('/upload', requireWorkspaceSalesRep(), upload.single('file'), async (req, res) => {
   if (!req.file) {
     res.status(400).json({ message: 'No file provided' })
     return
@@ -47,4 +60,3 @@ router.post('/upload', upload.single('file'), async (req, res) => {
 })
 
 export default router
-

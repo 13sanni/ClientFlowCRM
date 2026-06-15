@@ -13,7 +13,14 @@ export const notFoundHandler: RequestHandler = (req, res) => {
 export const errorHandler: ErrorRequestHandler = (error: ApiError, req, res, next) => {
   const statusCode = error.statusCode || 500
 
-  res.status(statusCode).json({
-    message: error.message || 'Internal server error',
-  })
+  if (statusCode >= 500) {
+    console.error('Server Error:', error)
+  }
+
+  const message =
+    statusCode >= 500 && process.env.NODE_ENV === 'production'
+      ? 'Internal server error'
+      : error.message || 'Internal server error'
+
+  res.status(statusCode).json({ message })
 }

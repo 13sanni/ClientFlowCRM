@@ -3,13 +3,12 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { DndContext, PointerSensor, useSensor, useSensors } from '@dnd-kit/core'
 import { KanbanCard } from './KanbanCard'
 import { KanbanColumn } from './KanbanColumn'
-import { motion, AnimatePresence } from 'framer-motion'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import ActionModal from '../common/ActionModal'
+import { cn } from '../../lib/utils'
 import { api } from '../../lib/api'
-import { formatDistanceToNow } from 'date-fns'
 
 const createDealSchema = z.object({
   title: z.string().trim().min(2, 'Title required'),
