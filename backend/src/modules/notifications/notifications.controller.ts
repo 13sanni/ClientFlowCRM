@@ -28,7 +28,7 @@ export const markAsRead: RequestHandler = async (req, res, next) => {
       throw new HttpError(401, 'Unauthorized')
     }
 
-    await notificationsService.markAsRead(id, userId, workspaceId)
+    await notificationsService.markAsRead(id as string, userId, workspaceId)
     res.status(200).json({ success: true })
   } catch (error) {
     next(error)

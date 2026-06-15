@@ -17,9 +17,10 @@ export const logger = pino({
       : undefined,
 })
 
-export const httpLogger = pinoHttp({
+// @ts-ignore - pino-http module exports are sometimes strictly typed as uncallable depending on TS version
+export const httpLogger = (pinoHttp as any)({
   logger,
-  customLogLevel: (req, res, err) => {
+  customLogLevel: (req: any, res: any, err: any) => {
     if (res.statusCode >= 400 && res.statusCode < 500) {
       return 'warn'
     } else if (res.statusCode >= 500 || err) {
