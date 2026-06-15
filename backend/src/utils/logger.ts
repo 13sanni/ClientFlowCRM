@@ -2,19 +2,21 @@ import pino from 'pino'
 import pinoHttp from 'pino-http'
 import { env } from '../config/env.js'
 
+// Force production logging if on Render, or if NODE_ENV is production
+const isProduction = env.NODE_ENV === 'production' || process.env.RENDER === 'true'
+
 export const logger = pino({
-  level: env.NODE_ENV === 'production' ? 'info' : 'debug',
-  transport:
-    env.NODE_ENV !== 'production'
-      ? {
-          target: 'pino-pretty',
-          options: {
-            colorize: true,
-            translateTime: 'SYS:standard',
-            ignore: 'pid,hostname',
-          },
-        }
-      : undefined,
+  level: isProduction ? 'info' : 'debug',
+  transport: !isProduction
+    ? {
+        target: 'pino-pretty',
+        options: {
+          colorize: true,
+          translateTime: 'SYS:standard',
+          ignore: 'pid,hostname',
+        },
+      }
+    : undefined,
 })
 
 // @ts-ignore - pino-http module exports are sometimes strictly typed as uncallable depending on TS version
