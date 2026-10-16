@@ -1,14 +1,25 @@
-import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { Eye, EyeOff } from 'lucide-react'
 import { useAuthStore } from '../../store/authStore'
+import DemoCredentialsCard from '../common/DemoCredentialsCard'
 
 function SignInPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const login = useAuthStore(state => state.login)
   const error = useAuthStore(state => state.error)
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+
+  useEffect(() => {
+    if (searchParams.get('demo') === 'true' || searchParams.get('fillDemo') === 'true') {
+      setEmail('admin@clientflow.io')
+      setPassword('Password@123')
+    }
+  }, [searchParams])
 
   const handleSignIn = async (e) => {
     e.preventDefault()
@@ -20,6 +31,11 @@ function SignInPage() {
     if (result.success) {
       navigate('/')
     }
+  }
+
+  const handleFillCredentials = (demoEmail, demoPassword) => {
+    setEmail(demoEmail)
+    setPassword(demoPassword)
   }
 
   return (
@@ -66,13 +82,16 @@ function SignInPage() {
             </p>
           </div>
 
+          {/* Demo Account Box */}
+          <DemoCredentialsCard onFill={handleFillCredentials} mode="signin" />
+
           {error && (
             <div className="mt-4 rounded-md bg-red-50 p-3 text-xs font-bold text-red-600">
               {error}
             </div>
           )}
 
-          <form className="mt-7 grid gap-4" onSubmit={handleSignIn}>
+          <form className="mt-6 grid gap-4" onSubmit={handleSignIn}>
             <label className="grid gap-1.5">
               <span className="text-[11px] font-bold text-slate-500">Email</span>
               <input
@@ -86,14 +105,24 @@ function SignInPage() {
             </label>
             <label className="grid gap-1.5">
               <span className="text-[11px] font-bold text-slate-500">Password</span>
-              <input
-                className="rounded-md border border-slate-200 bg-white px-3 py-2.5 text-sm font-semibold text-slate-700 outline-none focus:border-blue-300"
-                type="password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter password"
-              />
+              <div className="relative">
+                <input
+                  className="w-full rounded-md border border-slate-200 bg-white px-3 py-2.5 pr-10 text-sm font-semibold text-slate-700 outline-none focus:border-blue-300"
+                  type={showPassword ? 'text' : 'password'}
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Enter password"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded p-1 text-slate-400 hover:text-slate-600 focus:outline-none"
+                >
+                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </div>
             </label>
 
             <div className="flex items-center justify-between gap-3">

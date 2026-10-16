@@ -3,8 +3,10 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
+import { Eye, EyeOff } from 'lucide-react'
 import { useAuthStore } from '../../store/authStore'
 import { cn } from '../../lib/utils'
+import DemoCredentialsCard from '../common/DemoCredentialsCard'
 
 const signUpSchema = z.object({
   name: z.string().trim().min(2, 'Name must be at least 2 characters'),
@@ -17,6 +19,7 @@ function SignUpPage() {
   const navigate = useNavigate()
   const register = useAuthStore(state => state.register)
   const [serverError, setServerError] = useState(null)
+  const [showPassword, setShowPassword] = useState(false)
   
   const {
     register: formRegister,
@@ -51,13 +54,16 @@ function SignUpPage() {
             </p>
           </div>
 
+          {/* Demo Account Box */}
+          <DemoCredentialsCard mode="signup" />
+
           {serverError && (
             <div className="mt-5 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">
               {serverError}
             </div>
           )}
 
-          <form className="mt-7 grid gap-4" onSubmit={handleSubmit(onSubmit)}>
+          <form className="mt-6 grid gap-4" onSubmit={handleSubmit(onSubmit)}>
             <label className="grid gap-1.5">
               <span className="text-[11px] font-bold text-slate-500">Full name</span>
               <input
@@ -90,12 +96,22 @@ function SignUpPage() {
             </label>
             <label className="grid gap-1.5">
               <span className="text-[11px] font-bold text-slate-500">Password</span>
-              <input
-                className={cn("rounded-md border bg-white px-3 py-2.5 text-sm font-semibold text-slate-700 outline-none focus:border-blue-300", errors.password ? "border-red-300" : "border-slate-200")}
-                type="password"
-                placeholder="Create password"
-                {...formRegister('password')}
-              />
+              <div className="relative">
+                <input
+                  className={cn("w-full rounded-md border bg-white px-3 py-2.5 pr-10 text-sm font-semibold text-slate-700 outline-none focus:border-blue-300", errors.password ? "border-red-300" : "border-slate-200")}
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder="Create password"
+                  {...formRegister('password')}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded p-1 text-slate-400 hover:text-slate-600 focus:outline-none"
+                >
+                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </div>
               {errors.password && <span className="text-[10px] text-red-600">{errors.password.message}</span>}
             </label>
 
